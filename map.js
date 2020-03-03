@@ -2,7 +2,7 @@ import { point } from "./Point.js";
 
 const DRAW_SCALE = 1;
 
-const dashSpeed = 40;
+const dashSpeed = 80;
 const dashes = [15, 20];
 const lineWidth = 3;
 const totalDashLength = dashes.reduce((a, b) => a + b);

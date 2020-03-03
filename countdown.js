@@ -23,7 +23,7 @@ export const makeCountdown = (onCountdownFinish = () => {}) => {
                 break;
             }
         }
-        ctx.font = `${30 * scale}px Arial`;
+        ctx.font = `bold ${50 * scale}px Courier New`;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";

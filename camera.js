@@ -1,6 +1,6 @@
 import { point } from "./Point.js";
 
-const easeFactor = 1.3;
+const easeFactor = 1.6;
 
 const easing = (value, lowerBound, upperBound, exponent) => {
     if (value < lowerBound) {
