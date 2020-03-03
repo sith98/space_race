@@ -4,12 +4,15 @@ import { MAX_FRAME_LENGTH, DESIRED_FRAME_LENGTH } from "./constants.js";
 import { point } from "./Point.js";
 
 const WIDTH = 800;
-const HEIGHT = 600;
+const HEIGHT = 800;
 const SCALE = 1.5;
 
 let canvas, ctx, state, keyEventManager;
 
 let lastFrame = undefined;
+
+let lastWindowWidth = 0;
+let lastWindowHeight = 0;
 
 const main = () => {
     canvas = document.createElement("canvas");
@@ -47,8 +50,30 @@ const update = (time) => {
 }
 
 const render = () => {
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    state.render(ctx, SCALE);
+    const windowWidth = globalThis.innerWidth;
+    const windowHeight = globalThis.innerHeight;
+
+    if (windowWidth != lastWindowWidth || windowHeight != lastWindowHeight) {
+        const windowRatio = windowWidth / windowHeight;
+        const myRatio = WIDTH / HEIGHT;
+        const wider = windowRatio > myRatio;
+        
+        const width = wider ? windowHeight * myRatio : windowWidth;
+        const height = wider ? windowHeight : windowWidth / myRatio;
+    
+        canvas.width = canvas.style.width = width;
+        canvas.height = canvas.style.height = height;
+        canvas.style.top = (wider ? 0 : (windowHeight - height) / 2) + "px";
+        canvas.style.left = (wider ? (windowWidth - width) / 2 : 0) + "px";
+    }
+
+    lastWindowWidth = windowWidth;
+    lastWindowHeight = windowHeight;    
+
+    const scale = canvas.width / WIDTH;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    state.render(ctx, scale);
 }
 
 window.addEventListener("load", main);
