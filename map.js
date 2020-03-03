@@ -33,6 +33,8 @@ export const makeMap = (mapDefinition) => {
     const { checkpoints } = path;
 
     const splinePointArray = checkpoints.flatMap(c => [c.position.x, c.position.y]);
+    const splinePath = getCurvePoints(splinePointArray, path.splineTension, 20, true);
+    const startDirection = point(splinePath[2], splinePath[3]).sub(point(splinePath[0], splinePath[1])).angle();
 
     let lineOffset = 0
 
@@ -78,8 +80,12 @@ export const makeMap = (mapDefinition) => {
             ctx.setLineDash(dashes.map(n => n * scale));
             ctx.lineDashOffset = -lineOffset * scale;
             ctx.beginPath();
-    
-            ctx.curve(splinePointArray.map(c => c * scale), path.splineTension, 20, true);
+
+            for (let i = 0; i < splinePath.length; i += 2) {
+                const x = splinePath[i];
+                const y = splinePath[i + 1];
+                ctx.lineTo(x * scale, y * scale);
+            }
             ctx.stroke();
     
             ctx.fillStyle = "#70ff8f";
@@ -96,6 +102,7 @@ export const makeMap = (mapDefinition) => {
         render,
         get dimension() { return point(width, height) },
         get startPosition() { return checkpoints[0].position },
+        get startDirection() { return startDirection },
         get checkpoints() { return checkpoints },
     })
 }

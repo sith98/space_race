@@ -18,7 +18,11 @@ export const makeGameScreen = ({ dimension, keyEventManager }) => {
         state = State.GAME;
     });
     let map = makeMap(parseJson(exampleMap));
-    let ship = makeShip({startPosition: map.startPosition, checkpoints: map.checkpoints});
+    let ship = makeShip({
+        startPosition: map.startPosition,
+        startRotation: map.startDirection,
+        checkpoints: map.checkpoints
+    });
     
     let camera = makeCamera(dimension);
 
