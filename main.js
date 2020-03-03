@@ -2,12 +2,13 @@ import { makeGameScreen } from "./gameScreen.js";
 import { makeKeyEventManager } from "./keyEventManager.js";
 import { MAX_FRAME_LENGTH, DESIRED_FRAME_LENGTH } from "./constants.js";
 import { point } from "./Point.js";
+import maps from "./exampleMaps.js"
 
 const WIDTH = 800;
 const HEIGHT = 800;
 const SCALE = 1.5;
 
-let canvas, ctx, state, keyEventManager;
+let canvas, ctx, screen, keyEventManager;
 
 let lastFrame = undefined;
 
@@ -25,7 +26,7 @@ const main = () => {
     keyEventManager = makeKeyEventManager();
     keyEventManager.activate();
 
-    state = initState(makeGameScreen);
+    screen = initScreen(makeGameScreen(maps.u));
     globalThis.requestAnimationFrame(tick);
 }
 
@@ -37,7 +38,7 @@ const tick = () => {
     globalThis.requestAnimationFrame(tick);
 }
 
-const initState = (stateConstructor) => {
+const initScreen = (stateConstructor) => {
     return {
         update: () => {},
         render: () => {},
@@ -46,7 +47,7 @@ const initState = (stateConstructor) => {
 }
 
 const update = (time) => {
-    state.update(time);
+    screen.update(time);
 }
 
 const render = () => {
@@ -73,7 +74,11 @@ const render = () => {
     const scale = canvas.width / WIDTH;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    state.render(ctx, scale);
+    screen.render(ctx, scale);
 }
 
 window.addEventListener("load", main);
+
+window.startMap = (mapName) => {
+    screen = initScreen(makeGameScreen(maps[mapName]));
+}

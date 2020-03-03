@@ -1,7 +1,6 @@
 import { makeShip } from "./ship.js";
 import { makeMap, parseJson } from "./map.js";
 import { makeCamera } from "./camera.js";
-import * as maps from "./exampleMaps.js";
 import { makeCountdown } from "./countdown.js";
 
 export const State = Object.freeze({
@@ -11,13 +10,13 @@ export const State = Object.freeze({
 
 export const DEBUG = false;
 
-export const makeGameScreen = ({ dimension, keyEventManager }) => {
+export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) => {
     let state = State.COUNTDOWN
 
     let countdown = makeCountdown(() => {
         state = State.GAME;
     });
-    let map = makeMap(parseJson(maps.x));
+    let map = makeMap(parseJson(mapDefinition));
     let ship = makeShip({
         startPosition: map.startPosition,
         startRotation: map.startDirection,
