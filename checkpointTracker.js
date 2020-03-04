@@ -17,6 +17,17 @@ export const makeCheckpointTracker = (checkpoints) => {
         rotateOffset = (rotateOffset + time * rotateSpeed) % 1;
     }
 
+    const isCurrentCheckpointOnScreen = camera => {
+        const { position: {x, y}, radius } = getCurrentCheckpoint();
+        const { position, screenSize } = camera;
+        return (
+            x + radius > position.x &&
+            x - radius < position.x + screenSize.x &&
+            y + radius > position.y &&
+            y - radius < position.y + screenSize.y
+        );
+    }
+
     const renderCheckpoint = (checkpoint, radiusFactor, ctx, scale) => {
         ctx.fillStyle = "rgba(100, 255, 100, 0.5)";
         const radius = checkpoint.radius * scale * Math.sin(radiusFactor * (0.5 * Math.PI));
@@ -53,8 +64,12 @@ export const makeCheckpointTracker = (checkpoints) => {
         advance,
         update,
         render,
+        isCurrentCheckpointOnScreen,
         get currentCheckpoint() {
             return getCurrentCheckpoint();
+        },
+        get animationRunning() {
+            return timer > 0;
         }
     })
 }

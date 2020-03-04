@@ -1,3 +1,5 @@
+import { clamp } from "./util.js";
+
 export default class Point {
     constructor(x, y) {
         this.x = x; 
@@ -23,6 +25,14 @@ export default class Point {
 
     angle() {
         return Math.atan2(this.y, this.x);
+    }
+
+    clampInRect(left, top, right, bottom) {
+        return point(clamp(this.x, left, right), clamp(this.y, top, bottom));
+    }
+
+    static unit(direction) {
+        return point(Math.cos(direction), Math.sin(direction));
     }
 }
 

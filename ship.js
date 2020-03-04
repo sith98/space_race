@@ -1,4 +1,4 @@
-import { point } from "./Point.js"
+import Point, { point } from "./Point.js"
 import * as keyEventManager from "./keyEventManager.js";
 import { DESIRED_FRAME_LENGTH } from "./constants.js";
 import { makeCheckpointTracker } from "./checkpointTracker.js";
@@ -164,8 +164,9 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
                 ctx.closePath();
                 ctx.fill();
             }
-
+            
             ctx.restore();
+
             if (DEBUG) {
                 ctx.save();
                 ctx.translate(position.x * scale, position.y * scale);
@@ -183,6 +184,38 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
             }
             
         });
+
+        // render checkpoint arrow
+        if (!checkpointTracker.animationRunning && !checkpointTracker.isCurrentCheckpointOnScreen(camera)) {
+            const checkpointPosition = checkpointTracker.currentCheckpoint.position
+            const directionVector = checkpointPosition.sub(camera.position.add(camera.screenSize.mul(0.5)));
+            const direction = directionVector.angle();
+
+            const arrowDistance = 0.1
+            const topLeft = camera.screenSize.mul(arrowDistance);
+            const bottomRight = camera.screenSize.mul(1 - arrowDistance);
+
+            const arrowPosition = checkpointPosition.sub(camera.position)
+                .clampInRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
+            
+            ctx.save();
+
+            ctx.translate(arrowPosition.x * scale, arrowPosition.y * scale);
+            ctx.rotate(direction);
+
+            ctx.fillStyle = "lightgreen";
+            ctx.beginPath();
+            ctx.moveTo(0, shipSize * scale);
+            ctx.lineTo(shipSize * 0.5 * scale, shipSize * scale);
+            ctx.lineTo(shipSize * 1 * scale, 0);
+            ctx.lineTo(shipSize * 0.5 * scale, -shipSize * scale);
+            ctx.lineTo(0, -shipSize * scale);
+            ctx.lineTo(shipSize * 0.5 * scale, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
         
     }
 
