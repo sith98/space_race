@@ -28,11 +28,11 @@ export const makeCheckpointTracker = (checkpoints) => {
         );
     }
 
-    const renderCheckpoint = (checkpoint, radiusFactor, ctx, scale) => {
+    const renderCheckpoint = (checkpoint, radiusFactor, ctx) => {
         ctx.fillStyle = "rgba(100, 255, 100, 0.5)";
-        const radius = checkpoint.radius * scale * Math.sin(radiusFactor * (0.5 * Math.PI));
+        const radius = checkpoint.radius * Math.sin(radiusFactor * (0.5 * Math.PI));
         const partAngle = 2 * Math.PI / circleParts / 2;
-        const center = checkpoint.position.mul(scale);
+        const center = checkpoint.position;
         const offset = rotateOffset * partAngle * 2;
         for (let i = 0; i < circleParts; i++) {
             ctx.beginPath();
@@ -45,14 +45,14 @@ export const makeCheckpointTracker = (checkpoints) => {
         }
     }
 
-    const render = (ctx, scale, camera) => {
-        camera.withFocus(ctx, scale, () => {
+    const render = (ctx, camera) => {
+        camera.withFocus(ctx, () => {
             const radiusFactor = 1 - timer / animationTime;
             const currentCheckpoint = getCurrentCheckpoint();
-            renderCheckpoint(currentCheckpoint, radiusFactor, ctx, scale);
+            renderCheckpoint(currentCheckpoint, radiusFactor, ctx);
             if (timer > 0) {
                 const previousCheckpoint = getPreviousCheckpoint()
-                renderCheckpoint(previousCheckpoint, 1 - radiusFactor, ctx, scale);
+                renderCheckpoint(previousCheckpoint, 1 - radiusFactor, ctx);
             }
         });        
     }

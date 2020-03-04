@@ -126,25 +126,25 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
         plume = drive;
     };
 
-    const render = (ctx, scale, camera) => {
-        checkpointTracker.render(ctx, scale, camera);
+    const render = (ctx, camera) => {
+        checkpointTracker.render(ctx, camera);
 
         if (state === State.DEAD || state === State.BLINKING && Math.floor(timer / blinkRate) % 2 === 0) {
             return;
         }
 
-        camera.withFocus(ctx, scale, () => {
+        camera.withFocus(ctx, () => {
             ctx.save();
 
-            ctx.translate(position.x * scale, position.y * scale);
+            ctx.translate(position.x, position.y);
             ctx.rotate(rotation);
     
             ctx.fillStyle = color;
             ctx.beginPath();
-            ctx.moveTo(shipSize * scale, 0);
-            ctx.lineTo(-shipSize * scale, shipSize * 0.7 * scale);
-            ctx.lineTo(-shipSize * 0.5 * scale, 0);
-            ctx.lineTo(-shipSize * scale, -shipSize * 0.7 * scale);
+            ctx.moveTo(shipSize, 0);
+            ctx.lineTo(-shipSize, shipSize * 0.7);
+            ctx.lineTo(-shipSize * 0.5, 0);
+            ctx.lineTo(-shipSize, -shipSize * 0.7);
             ctx.closePath();
             ctx.fill();
     
@@ -153,14 +153,14 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
                 const width = shipSize * (0.5 + (Math.random() - 0.5) * 0.3);
                 const length = shipSize * (2 + (Math.random() - 0.5) * 0.6);
                 ctx.beginPath();
-                ctx.moveTo(-shipSize * scale * 0.7, 0);
-                ctx.lineTo(-length * scale * 0.5, width * scale * 0.5);
-                ctx.lineTo(-length * scale, width * scale);
-                ctx.lineTo(-length * scale * 0.8, width * scale * 0.3);
-                ctx.lineTo(-length * scale * 1.3, 0);
-                ctx.lineTo(-length * scale * 0.8, -width * scale * 0.3);
-                ctx.lineTo(-length * scale, -width * scale);
-                ctx.lineTo(-length * scale * 0.5, -width * scale * 0.5);
+                ctx.moveTo(-shipSize * 0.7, 0);
+                ctx.lineTo(-length * 0.5, width * 0.5);
+                ctx.lineTo(-length, width);
+                ctx.lineTo(-length * 0.8, width * 0.3);
+                ctx.lineTo(-length * 1.3, 0);
+                ctx.lineTo(-length * 0.8, -width * 0.3);
+                ctx.lineTo(-length, -width);
+                ctx.lineTo(-length * 0.5, -width * 0.5);
                 ctx.closePath();
                 ctx.fill();
             }
@@ -169,11 +169,11 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
 
             if (DEBUG) {
                 ctx.save();
-                ctx.translate(position.x * scale, position.y * scale);
+                ctx.translate(position.x, position.y);
                 ctx.rotate(desiredRotation);
                 
                 ctx.strokeStyle = color;
-                ctx.lineWidth = 2 * scale;
+                ctx.lineWidth = 2;
     
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
@@ -200,17 +200,17 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
             
             ctx.save();
 
-            ctx.translate(arrowPosition.x * scale, arrowPosition.y * scale);
+            ctx.translate(arrowPosition.x, arrowPosition.y);
             ctx.rotate(direction);
 
             ctx.fillStyle = "lightgreen";
             ctx.beginPath();
-            ctx.moveTo(0, shipSize * scale);
-            ctx.lineTo(shipSize * 0.5 * scale, shipSize * scale);
-            ctx.lineTo(shipSize * 1 * scale, 0);
-            ctx.lineTo(shipSize * 0.5 * scale, -shipSize * scale);
-            ctx.lineTo(0, -shipSize * scale);
-            ctx.lineTo(shipSize * 0.5 * scale, 0);
+            ctx.moveTo(0, shipSize);
+            ctx.lineTo(shipSize * 0.5, shipSize);
+            ctx.lineTo(shipSize * 1, 0);
+            ctx.lineTo(shipSize * 0.5, -shipSize);
+            ctx.lineTo(0, -shipSize);
+            ctx.lineTo(shipSize * 0.5, 0);
             ctx.closePath();
             ctx.fill();
 

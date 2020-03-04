@@ -1,6 +1,6 @@
 import { point } from "./Point.js";
 
-const easeFactor = 1.6;
+const easeFactor = 1.4;
 
 const easing = (value, lowerBound, upperBound, exponent) => {
     if (value < lowerBound) {
@@ -31,9 +31,9 @@ export const makeCamera = (screenSize) => {
         );
     }
 
-    const withFocus = (ctx, scale, callback) => {
+    const withFocus = (ctx, callback) => {
         ctx.save();
-        ctx.translate(-position.x * scale, -position.y * scale);
+        ctx.translate(-position.x, -position.y);
         callback();
         ctx.restore();
     }

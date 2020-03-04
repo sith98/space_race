@@ -1,8 +1,6 @@
 import { point } from "./Point.js";
 import { mod } from "./util.js";
 
-const DRAW_SCALE = 1;
-
 const dashSpeed = 80;
 const dashes = [15, 20];
 const lineWidth = 3;
@@ -102,14 +100,14 @@ export const makeMap = (mapDefinition) => {
         }
         
         const starCanvas = document.createElement("canvas");
-        starCanvas.width = width * DRAW_SCALE;
-        starCanvas.height = height * DRAW_SCALE;
+        starCanvas.width = width;
+        starCanvas.height = height;
         const starCtx = starCanvas.getContext("2d");
         starCtx.fillStyle = "black";
-        starCtx.fillRect(0, 0, width * DRAW_SCALE, height * DRAW_SCALE);
+        starCtx.fillRect(0, 0, width, height);
         starCtx.fillStyle = "white"
         for (const { x, y, size } of stars) {
-            starCtx.fillRect(x * DRAW_SCALE, y * DRAW_SCALE, size * DRAW_SCALE, size * DRAW_SCALE);
+            starCtx.fillRect(x, y, size, size);
         }
         return starCanvas;
     }
@@ -120,28 +118,28 @@ export const makeMap = (mapDefinition) => {
         lineOffset = (lineOffset + time * dashSpeed) % totalDashLength;
     }
 
-    const render = (ctx, scale, camera) => {
-        const backgroundX = -camera.position.x * scale * paralaxFactor;
-        const backgroundY = -camera.position.y * scale * paralaxFactor;
+    const render = (ctx, camera) => {
+        const backgroundX = -camera.position.x * paralaxFactor;
+        const backgroundY = -camera.position.y * paralaxFactor;
 
-        ctx.drawImage(starCanvas, backgroundX, backgroundY, width * scale / DRAW_SCALE, height * scale / DRAW_SCALE);
+        ctx.drawImage(starCanvas, backgroundX, backgroundY, width, height);
 
-        camera.withFocus(ctx, scale, () => {
+        camera.withFocus(ctx, () => {
             ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-            ctx.lineWidth = lineWidth * scale;
-            ctx.setLineDash(dashes.map(n => n * scale));
-            ctx.lineDashOffset = -lineOffset * scale;
+            ctx.lineWidth = lineWidth;
+            ctx.setLineDash(dashes);
+            ctx.lineDashOffset = -lineOffset;
             ctx.beginPath();
 
             for (const { x, y } of spline) {
-                ctx.lineTo(x * scale, y * scale);
+                ctx.lineTo(x, y);
             }
             ctx.stroke();
     
             ctx.fillStyle = "#70ff8f";
             for (const checkpoint of checkpoints) {
                 ctx.beginPath();
-                ctx.arc(checkpoint.position.x * scale, checkpoint.position.y * scale, checkpointDotRadius * scale, 0, 2 * Math.PI);
+                ctx.arc(checkpoint.position.x, checkpoint.position.y, checkpointDotRadius, 0, 2 * Math.PI);
                 ctx.fill();
             }
         })        

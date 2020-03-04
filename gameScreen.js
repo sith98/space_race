@@ -34,11 +34,16 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
     }
     const render = (ctx, scale) => {
         camera.focus(ship.position, map.dimension);
+        
+        ctx.save();
+        {
+            ctx.scale(scale, scale);
 
-        map.render(ctx, scale, camera);
-        ship.render(ctx, scale, camera);
-        countdown.render(ctx, scale, camera);
-
+            map.render(ctx, camera);
+            ship.render(ctx, camera);
+            countdown.render(ctx, camera);
+        }
+        ctx.restore();
         // document.getElementById("debug").innerHTML = keyEventManager.toString();
     };
     return {
