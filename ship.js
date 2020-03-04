@@ -3,6 +3,7 @@ import * as keyEventManager from "./keyEventManager.js";
 import { DESIRED_FRAME_LENGTH } from "./constants.js";
 import { makeCheckpointTracker } from "./checkpointTracker.js";
 import { State as GameState, DEBUG } from "./gameScreen.js";
+import { mod } from "./util.js";
 
 const acceleration = 0.1;
 const rotationSpeed = 0.02;
@@ -25,10 +26,6 @@ const State = Object.freeze({
     DEAD: 1,
     BLINKING: 2,
 });
-
-const mod = (a, b) => {
-    return a < 0 ? (b + a) % b : a % b;
-}
 
 export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color = "#f3e2dc", checkpoints} = {}) => {
     let position = startPosition;

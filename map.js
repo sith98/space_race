@@ -1,4 +1,5 @@
 import { point } from "./Point.js";
+import { mod } from "./util.js";
 
 const DRAW_SCALE = 1;
 
@@ -14,27 +15,78 @@ const starsPer100Pixels = 0.2;
 
 export const parseJson = (json) => {
     const { width, height, path, padding = 0 } = json;
-    const { splineTension = 0.5, checkpoints: checkpointArray, defaultRadius } = path;
+    const { splineTension = 0.5, nInterpolationPoints = 20, checkpoints: checkpointArray, defaultRadius } = path;
+
+    const splineAnchors = []
+    const rawCheckpoints = [];
+    let anchorIndex = -1;
+    for (const { x, y, radius = defaultRadius, interpolated } of checkpointArray) {
+        if (typeof interpolated === "number") {
+            rawCheckpoints.push({
+                interpolated: anchorIndex + interpolated,
+                radius
+            });
+        } else {
+            const position = point(x + padding, y + padding);
+            rawCheckpoints.push({
+                position,
+                radius,
+            });
+            splineAnchors.push(position.x);
+            splineAnchors.push(position.y);
+            anchorIndex += 1;
+        }
+    }
+
+    const nAnchors = anchorIndex + 1;
+
+    const rawSplinePoints = getCurvePoints(splineAnchors, splineTension, nInterpolationPoints, true);
+    const spline = []
+    for (let i = 0; i < rawSplinePoints.length; i += 2) {
+        spline.push(point(rawSplinePoints[i], rawSplinePoints[i + 1]));
+    }
+
+    let splineStartIndex = 0;
+
+    const checkpoints = [];
+    for (const [index, checkpoint] of rawCheckpoints.entries()) {
+        if (typeof checkpoint.interpolated === "number") {
+            const { radius, interpolated } = checkpoint;
+            const closestPointIndex = mod(
+                Math.round(interpolated * nInterpolationPoints),
+                nAnchors * nInterpolationPoints
+            );
+            const closestPoint = spline[closestPointIndex];
+            // special case: if first checkpoint is interpolated, starting direction is based on its spline position
+            if (index === 0) {
+                splineStartIndex = closestPointIndex;
+            }
+            checkpoints.push({
+                position: closestPoint,
+                radius
+            })
+        } else {
+            const { position, radius } = checkpoint
+            checkpoints.push({ position, radius });
+        }
+    };
+
+    const startDirection = spline[splineStartIndex + 1].sub(spline[splineStartIndex]).angle();
+    
     return {
         width: width + 2 * padding,
         height: height + 2 * padding,
+        startDirection,
         path: {
-            splineTension,
-            checkpoints: checkpointArray.map(({x, y, radius = defaultRadius}) => ({
-                position: point(x + padding, y + padding),
-                radius
-            })),
+            spline,
+            checkpoints,
         },
     }
 };
 
 export const makeMap = (mapDefinition) => {
-    const { width, height, path } = mapDefinition;
-    const { checkpoints } = path;
-
-    const splinePointArray = checkpoints.flatMap(c => [c.position.x, c.position.y]);
-    const splinePath = getCurvePoints(splinePointArray, path.splineTension, 20, true);
-    const startDirection = point(splinePath[2], splinePath[3]).sub(point(splinePath[0], splinePath[1])).angle();
+    const { width, height, path, startDirection } = mapDefinition;
+    const { checkpoints, spline } = path;
 
     let lineOffset = 0
 
@@ -81,9 +133,7 @@ export const makeMap = (mapDefinition) => {
             ctx.lineDashOffset = -lineOffset * scale;
             ctx.beginPath();
 
-            for (let i = 0; i < splinePath.length; i += 2) {
-                const x = splinePath[i];
-                const y = splinePath[i + 1];
+            for (const { x, y } of spline) {
                 ctx.lineTo(x * scale, y * scale);
             }
             ctx.stroke();
