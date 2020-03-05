@@ -62,7 +62,6 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
     }
 
     const update = ({ time, keyEventManager, map, progressTracker, gameState }) => {
-        console.log(keyEventManager.toString());
         // state management
 
         if (timer > 0) {

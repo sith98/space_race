@@ -1,3 +1,5 @@
+import { fontName } from "./constants.js"
+
 export const makeCountdown = (onCountdownFinish = () => {}) => {
     let finished = false;
     let timer = 0;
@@ -23,7 +25,7 @@ export const makeCountdown = (onCountdownFinish = () => {}) => {
                 break;
             }
         }
-        ctx.font = `bold 50px Courier New`;
+        ctx.font = fontName(50);
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         ctx.fillStyle = "white";

@@ -12,7 +12,7 @@ const paralaxFactor = 0.4;
 const starsPer100Pixels = 0.2;
 
 export const parseJson = (json) => {
-    const { width, height, path, padding = 0 } = json;
+    const { width, height, path, padding = 0, laps = 5 } = json;
     const { splineTension = 0.5, nInterpolationPoints = 20, checkpoints: checkpointArray, defaultRadius } = path;
 
     const splineAnchors = []
@@ -75,6 +75,7 @@ export const parseJson = (json) => {
         width: width + 2 * padding,
         height: height + 2 * padding,
         startDirection,
+        laps,
         path: {
             spline,
             checkpoints,

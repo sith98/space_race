@@ -1,21 +1,57 @@
+import { point } from "./Point.js";
+import { fontName } from "./constants.js";
+
 const animationTime = 0.4;
 const rotateSpeed = 0.3;
 const circleParts = 8;
 
 const arrowSize = 12;
 
-export const makeProgressTracker = (checkpoints) => {
+const overlaySize = 80;
+
+const displayTime = ms => {
+    const as2Digits = n => n >= 10 ? n.toString() : "0" + n.toString();
+
+    const hundredths = Math.floor(ms % 1000 / 10);
+    const totalSeconds = Math.floor(ms / 1000);
+    const seconds = totalSeconds % 60;
+    const minutes = Math.floor(totalSeconds / 60);
+    return `${as2Digits(minutes)}:${as2Digits(seconds)}.${as2Digits(hundredths)}`;
+}
+
+export const makeProgressTracker = (parsedMapDefinition) => {
+    const { path: { checkpoints }, laps } = parsedMapDefinition;
     let index = 1;
-    let timer = 0;
+    let animationTimer = 0;
     let rotateOffset = 0;
+    let currentLap = 1;
+
+    let raceFinished = false;
+    let finishedTime = 0;
+
+    let startingTime = undefined;
 
     const advance = () => {
+        if (raceFinished) {
+            return;
+        }
+        if (index === 0) {
+            currentLap += 1;
+        }
+        if (currentLap > laps) {
+            raceFinished = true;
+            finishedTime = Date.now();
+        }
         index = (index + 1) % checkpoints.length;
-        timer = animationTime;
+        animationTimer = animationTime;
+    }
+
+    const startTimer = () => {
+        startingTime = Date.now();
     }
 
     const update = (time) => {
-        timer = Math.max(timer - time, 0);
+        animationTimer = Math.max(animationTimer - time, 0);
         rotateOffset = (rotateOffset + time * rotateSpeed) % 1;
     }
 
@@ -49,10 +85,12 @@ export const makeProgressTracker = (checkpoints) => {
 
     const renderCheckpoints = (ctx, camera) => {
         camera.withFocus(ctx, () => {
-            const radiusFactor = 1 - timer / animationTime;
+            const radiusFactor = 1 - animationTimer / animationTime;
             const currentCheckpoint = getCurrentCheckpoint();
-            renderCheckpoint(currentCheckpoint, radiusFactor, ctx);
-            if (timer > 0) {
+            if (!raceFinished) {
+                renderCheckpoint(currentCheckpoint, radiusFactor, ctx);
+            }
+            if (animationTimer > 0) {
                 const previousCheckpoint = getPreviousCheckpoint()
                 renderCheckpoint(previousCheckpoint, 1 - radiusFactor, ctx);
             }
@@ -60,15 +98,38 @@ export const makeProgressTracker = (checkpoints) => {
     };
 
     const renderOverlay = (ctx, camera) => {
+        ctx.font = fontName(overlaySize / 2);
+        ctx.textAlign = "left";
+        ctx.textBaseline = "bottom";
+
+        ctx.fillStyle = "white";
+        if (!raceFinished) {
+            ctx.fillText(
+                `Lap ${currentLap}/${laps}`,
+                overlaySize / 3,
+                camera.screenSize.y - overlaySize / 3,
+            );
+        }
+        
+        const elapsedTime = 
+            startingTime === undefined ? 0 :
+            (raceFinished ? finishedTime : Date.now()) - startingTime;
+        
+        ctx.textAlign = "right";
+        ctx.fillText(
+            displayTime(elapsedTime),
+            camera.screenSize.x - overlaySize / 3,
+            camera.screenSize.y - overlaySize / 3,
+        );
+
         // render checkpoint arrow
-        if (timer === 0 && !isCurrentCheckpointOnScreen(camera)) {
+        if (!raceFinished && animationTimer === 0 && !isCurrentCheckpointOnScreen(camera)) {
             const checkpointPosition = getCurrentCheckpoint().position
             const directionVector = checkpointPosition.sub(camera.position.add(camera.screenSize.mul(0.5)));
             const direction = directionVector.angle();
 
-            const arrowDistance = 0.1
-            const topLeft = camera.screenSize.mul(arrowDistance);
-            const bottomRight = camera.screenSize.mul(1 - arrowDistance);
+            const topLeft = point(overlaySize, overlaySize);
+            const bottomRight = camera.screenSize.sub(topLeft);
 
             const arrowPosition = checkpointPosition.sub(camera.position)
                 .clampInRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
@@ -102,6 +163,7 @@ export const makeProgressTracker = (checkpoints) => {
         renderCheckpoints,
         renderOverlay,
         isCurrentCheckpointOnScreen,
+        startTimer,
         get currentCheckpoint() {
             return getCurrentCheckpoint();
         },

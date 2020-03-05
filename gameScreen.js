@@ -16,14 +16,16 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
 
     let countdown = makeCountdown(() => {
         state = State.GAME;
+        progressTracker.startTimer();
     });
-    let map = makeMap(parseJson(mapDefinition));
+    let parsedMapDefinition = parseJson(mapDefinition);
+    let map = makeMap(parsedMapDefinition);
     let ship = makeShip({
         startPosition: map.startPosition,
         startRotation: map.startDirection,
         checkpoints: map.checkpoints
     });
-    let progressTracker = makeProgressTracker(map.checkpoints);
+    let progressTracker = makeProgressTracker(parsedMapDefinition);
     
     let camera = makeCamera(dimension);
 
