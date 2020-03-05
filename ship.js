@@ -1,7 +1,7 @@
 import Point, { point } from "./Point.js"
 import * as keyEventManager from "./keyEventManager.js";
 import { DESIRED_FRAME_LENGTH } from "./constants.js";
-import { makeCheckpointTracker } from "./checkpointTracker.js";
+import { makeProgressTracker } from "./progressTracker.js";
 import { State as GameState, DEBUG } from "./gameScreen.js";
 import { mod } from "./util.js";
 
@@ -36,7 +36,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
     let timer = 0;
     let plume = false;
 
-    const checkpointTracker = makeCheckpointTracker(checkpoints);
+    const progressTracker = makeProgressTracker(checkpoints);
 
     const die = () => {
         state = State.DEAD;
@@ -64,7 +64,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
     }
 
     const update = (time, kem, map, gameState) => {
-        checkpointTracker.update(time);
+        progressTracker.update(time);
 
         // state management
 
@@ -116,9 +116,9 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
             die();
         }
 
-        const currentCheckpoint = checkpointTracker.currentCheckpoint;
+        const currentCheckpoint = progressTracker.currentCheckpoint;
         if (currentCheckpoint.position.sub(position).abs() <= currentCheckpoint.radius + checkpointBorder) {
-            checkpointTracker.advance();
+            progressTracker.advance();
         }
 
         // cosmetics
@@ -127,7 +127,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
     };
 
     const render = (ctx, camera) => {
-        checkpointTracker.render(ctx, camera);
+        progressTracker.render(ctx, camera);
 
         if (state === State.DEAD || state === State.BLINKING && Math.floor(timer / blinkRate) % 2 === 0) {
             return;
@@ -186,8 +186,8 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
         });
 
         // render checkpoint arrow
-        if (!checkpointTracker.animationRunning && !checkpointTracker.isCurrentCheckpointOnScreen(camera)) {
-            const checkpointPosition = checkpointTracker.currentCheckpoint.position
+        if (!progressTracker.animationRunning && !progressTracker.isCurrentCheckpointOnScreen(camera)) {
+            const checkpointPosition = progressTracker.currentCheckpoint.position
             const directionVector = checkpointPosition.sub(camera.position.add(camera.screenSize.mul(0.5)));
             const direction = directionVector.angle();
 

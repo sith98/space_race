@@ -2,7 +2,7 @@ const animationTime = 0.4;
 const rotateSpeed = 0.3;
 const circleParts = 8;
 
-export const makeCheckpointTracker = (checkpoints) => {
+export const makeProgressTracker = (checkpoints) => {
     let index = 1;
     let timer = 0;
     let rotateOffset = 0;
