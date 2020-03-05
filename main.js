@@ -1,3 +1,4 @@
+import { makeMainMenuScreen } from "./mainMenuScreen.js";
 import { makeGameScreen } from "./gameScreen.js";
 import { makeKeyEventManager } from "./keyEventManager.js";
 import { MAX_FRAME_LENGTH, DESIRED_FRAME_LENGTH } from "./constants.js";
@@ -26,7 +27,7 @@ const main = () => {
     keyEventManager = makeKeyEventManager();
     keyEventManager.activate();
 
-    screen = initScreen(makeGameScreen(maps.u));
+    initScreen(makeMainMenuScreen);
     globalThis.requestAnimationFrame(tick);
 }
 
@@ -39,10 +40,10 @@ const tick = () => {
 }
 
 const initScreen = (stateConstructor) => {
-    return {
+    screen = {
         update: () => {},
         render: () => {},
-        ...stateConstructor({ dimension: point(WIDTH, HEIGHT), keyEventManager })
+        ...stateConstructor({ canvas, dimension: point(WIDTH, HEIGHT), keyEventManager, initScreen }),
     }
 }
 
