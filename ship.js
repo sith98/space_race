@@ -1,5 +1,5 @@
 import Point, { point } from "./Point.js"
-import * as keyEventManager from "./keyEventManager.js";
+import { LEFT, RIGHT, UP, DOWN } from "./keyEventManager.js";
 import { DESIRED_FRAME_LENGTH } from "./constants.js";
 import { makeProgressTracker } from "./progressTracker.js";
 import { State as GameState, DEBUG } from "./gameScreen.js";
@@ -36,8 +36,6 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
     let timer = 0;
     let plume = false;
 
-    const progressTracker = makeProgressTracker(checkpoints);
-
     const die = () => {
         state = State.DEAD;
         timer = deadTime;
@@ -63,9 +61,8 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
         timer = 0;
     }
 
-    const update = (time, kem, map, gameState) => {
-        progressTracker.update(time);
-
+    const update = ({ time, keyEventManager, map, progressTracker, gameState }) => {
+        console.log(keyEventManager.toString());
         // state management
 
         if (timer > 0) {
@@ -86,9 +83,9 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
         // controls
         const timeFactor = time / DESIRED_FRAME_LENGTH;
 
-        if (kem.isPressed(keyEventManager.LEFT)) {
+        if (keyEventManager.isPressed(LEFT)) {
             desiredRotation -= Math.PI * rotationSpeed * timeFactor;
-        } else if (kem.isPressed(keyEventManager.RIGHT)) {
+        } else if (keyEventManager.isPressed(RIGHT)) {
             desiredRotation += Math.PI * rotationSpeed * timeFactor;
         }
         rotation = mod(rotation, 2 * Math.PI);
@@ -101,12 +98,12 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
             angleDifference;
         rotation += (1 - angularInertia * timeFactor) * normalizedAngleDifference;
 
-        const drive = kem.isPressed(keyEventManager.UP);
+        const drive = keyEventManager.isPressed(UP);
         if (drive && gameState === GameState.GAME) {
             speed = speed.add(point(Math.cos(rotation), Math.sin(rotation)).mul(acceleration * timeFactor));
         }
         position = position.add(speed);
-        speed = speed.mul(kem.isPressed(keyEventManager.DOWN) ? 1 - brakeFriction * timeFactor : 1 - friction * timeFactor);
+        speed = speed.mul(keyEventManager.isPressed(DOWN) ? 1 - brakeFriction * timeFactor : 1 - friction * timeFactor);
 
         // environment interactions
 
@@ -127,7 +124,6 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
     };
 
     const render = (ctx, camera) => {
-        progressTracker.render(ctx, camera);
 
         if (state === State.DEAD || state === State.BLINKING && Math.floor(timer / blinkRate) % 2 === 0) {
             return;
@@ -184,38 +180,6 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
             }
             
         });
-
-        // render checkpoint arrow
-        if (!progressTracker.animationRunning && !progressTracker.isCurrentCheckpointOnScreen(camera)) {
-            const checkpointPosition = progressTracker.currentCheckpoint.position
-            const directionVector = checkpointPosition.sub(camera.position.add(camera.screenSize.mul(0.5)));
-            const direction = directionVector.angle();
-
-            const arrowDistance = 0.1
-            const topLeft = camera.screenSize.mul(arrowDistance);
-            const bottomRight = camera.screenSize.mul(1 - arrowDistance);
-
-            const arrowPosition = checkpointPosition.sub(camera.position)
-                .clampInRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
-            
-            ctx.save();
-
-            ctx.translate(arrowPosition.x, arrowPosition.y);
-            ctx.rotate(direction);
-
-            ctx.fillStyle = "lightgreen";
-            ctx.beginPath();
-            ctx.moveTo(0, shipSize);
-            ctx.lineTo(shipSize * 0.5, shipSize);
-            ctx.lineTo(shipSize * 1, 0);
-            ctx.lineTo(shipSize * 0.5, -shipSize);
-            ctx.lineTo(0, -shipSize);
-            ctx.lineTo(shipSize * 0.5, 0);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.restore();
-        }
         
     }
 

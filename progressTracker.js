@@ -2,6 +2,8 @@ const animationTime = 0.4;
 const rotateSpeed = 0.3;
 const circleParts = 8;
 
+const arrowSize = 12;
+
 export const makeProgressTracker = (checkpoints) => {
     let index = 1;
     let timer = 0;
@@ -45,7 +47,7 @@ export const makeProgressTracker = (checkpoints) => {
         }
     }
 
-    const render = (ctx, camera) => {
+    const renderCheckpoints = (ctx, camera) => {
         camera.withFocus(ctx, () => {
             const radiusFactor = 1 - timer / animationTime;
             const currentCheckpoint = getCurrentCheckpoint();
@@ -54,7 +56,41 @@ export const makeProgressTracker = (checkpoints) => {
                 const previousCheckpoint = getPreviousCheckpoint()
                 renderCheckpoint(previousCheckpoint, 1 - radiusFactor, ctx);
             }
-        });        
+        });
+    };
+
+    const renderOverlay = (ctx, camera) => {
+        // render checkpoint arrow
+        if (timer === 0 && !isCurrentCheckpointOnScreen(camera)) {
+            const checkpointPosition = getCurrentCheckpoint().position
+            const directionVector = checkpointPosition.sub(camera.position.add(camera.screenSize.mul(0.5)));
+            const direction = directionVector.angle();
+
+            const arrowDistance = 0.1
+            const topLeft = camera.screenSize.mul(arrowDistance);
+            const bottomRight = camera.screenSize.mul(1 - arrowDistance);
+
+            const arrowPosition = checkpointPosition.sub(camera.position)
+                .clampInRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
+            
+            ctx.save();
+
+            ctx.translate(arrowPosition.x, arrowPosition.y);
+            ctx.rotate(direction);
+
+            ctx.fillStyle = "lightgreen";
+            ctx.beginPath();
+            ctx.moveTo(0, arrowSize);
+            ctx.lineTo(arrowSize * 0.5, arrowSize);
+            ctx.lineTo(arrowSize * 1, 0);
+            ctx.lineTo(arrowSize * 0.5, -arrowSize);
+            ctx.lineTo(0, -arrowSize);
+            ctx.lineTo(arrowSize * 0.5, 0);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }  
     }
 
     const getCurrentCheckpoint = () => checkpoints[index];
@@ -63,13 +99,11 @@ export const makeProgressTracker = (checkpoints) => {
     return Object.freeze({
         advance,
         update,
-        render,
+        renderCheckpoints,
+        renderOverlay,
         isCurrentCheckpointOnScreen,
         get currentCheckpoint() {
             return getCurrentCheckpoint();
         },
-        get animationRunning() {
-            return timer > 0;
-        }
     })
 }

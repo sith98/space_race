@@ -2,6 +2,7 @@ import { makeShip } from "./ship.js";
 import { makeMap, parseJson } from "./map.js";
 import { makeCamera } from "./camera.js";
 import { makeCountdown } from "./countdown.js";
+import { makeProgressTracker } from "./progressTracker.js";
 
 export const State = Object.freeze({
     COUNTDOWN: 0,
@@ -22,6 +23,7 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
         startRotation: map.startDirection,
         checkpoints: map.checkpoints
     });
+    let progressTracker = makeProgressTracker(map.checkpoints);
     
     let camera = makeCamera(dimension);
 
@@ -29,7 +31,8 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
 
     const update = (time) => {
         map.update(time);
-        ship.update(time, keyEventManager, map, state);
+        progressTracker.update(time);
+        ship.update({ time, keyEventManager, map, gameState: state, progressTracker });
         countdown.update(time);
     }
     const render = (ctx, scale) => {
@@ -40,11 +43,12 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
             ctx.scale(scale, scale);
 
             map.render(ctx, camera);
+            progressTracker.renderCheckpoints(ctx, camera);
             ship.render(ctx, camera);
+            progressTracker.renderOverlay(ctx, camera);
             countdown.render(ctx, camera);
         }
         ctx.restore();
-        // document.getElementById("debug").innerHTML = keyEventManager.toString();
     };
     return {
         update,
