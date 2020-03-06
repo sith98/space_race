@@ -6,7 +6,8 @@ const dashes = [15, 20];
 const lineWidth = 3;
 const totalDashLength = dashes.reduce((a, b) => a + b);
 
-const checkpointDotRadius = 3;
+const checkpointDotRadius = 4.5;
+const finishCheckpointDotRadius = 9;
 
 const paralaxFactor = 0.4;
 const starsPer100Pixels = 0.2;
@@ -119,13 +120,14 @@ export const makeMap = (mapDefinition) => {
         lineOffset = (lineOffset + time * dashSpeed) % totalDashLength;
     }
 
-    const render = (ctx, camera) => {
+    const renderBackground = (ctx, camera) => {
         const backgroundX = -camera.position.x * paralaxFactor;
         const backgroundY = -camera.position.y * paralaxFactor;
 
         ctx.drawImage(starCanvas, backgroundX, backgroundY, width, height);
 
         camera.withFocus(ctx, () => {
+            ctx.save();
             ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
             ctx.lineWidth = lineWidth;
             ctx.setLineDash(dashes);
@@ -136,19 +138,28 @@ export const makeMap = (mapDefinition) => {
                 ctx.lineTo(x, y);
             }
             ctx.stroke();
-    
-            ctx.fillStyle = "#70ff8f";
-            for (const checkpoint of checkpoints) {
+            ctx.restore();
+
+        })        
+    };
+
+    const renderForeground = (ctx, camera, colorScheme) => {
+        camera.withFocus(ctx, () => {
+            ctx.fillStyle = colorScheme.checkpoint;
+            for (const [i, checkpoint] of checkpoints.entries()) {
+                const radius = i === 0 ? finishCheckpointDotRadius : checkpointDotRadius;
                 ctx.beginPath();
-                ctx.arc(checkpoint.position.x, checkpoint.position.y, checkpointDotRadius, 0, 2 * Math.PI);
+                ctx.arc(checkpoint.position.x, checkpoint.position.y, radius, 0, 2 * Math.PI);
+                ctx.closePath();
                 ctx.fill();
             }
-        })        
-    }
+        });
+    };
 
     return Object.freeze({
         update,
-        render,
+        renderBackground,
+        renderForeground,
         get dimension() { return point(width, height) },
         get startPosition() { return checkpoints[0].position },
         get startDirection() { return startDirection },

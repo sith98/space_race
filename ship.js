@@ -4,6 +4,7 @@ import { DESIRED_FRAME_LENGTH } from "./constants.js";
 import { makeProgressTracker } from "./progressTracker.js";
 import { State as GameState, DEBUG } from "./gameScreen.js";
 import { mod } from "./util.js";
+import { playerColors } from "./colors.js";
 
 const acceleration = 0.1;
 const rotationSpeed = 0.02;
@@ -27,7 +28,7 @@ const State = Object.freeze({
     BLINKING: 2,
 });
 
-export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color = "#f3e2dc", checkpoints} = {}) => {
+export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}) => {
     let position = startPosition;
     let rotation = startRotation;
     let desiredRotation = startRotation;
@@ -122,7 +123,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
         plume = drive;
     };
 
-    const render = (ctx, camera) => {
+    const render = (ctx, camera, colorScheme) => {
 
         if (state === State.DEAD || state === State.BLINKING && Math.floor(timer / blinkRate) % 2 === 0) {
             return;
@@ -134,7 +135,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
             ctx.translate(position.x, position.y);
             ctx.rotate(rotation);
     
-            ctx.fillStyle = color;
+            ctx.fillStyle = colorScheme.ship;
             ctx.beginPath();
             ctx.moveTo(shipSize, 0);
             ctx.lineTo(-shipSize, shipSize * 0.7);
@@ -144,7 +145,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0, color
             ctx.fill();
     
             if (plume) {
-                ctx.fillStyle = "#efd451";
+                ctx.fillStyle = colorScheme.plume;
                 const width = shipSize * (0.5 + (Math.random() - 0.5) * 0.3);
                 const length = shipSize * (2 + (Math.random() - 0.5) * 0.6);
                 ctx.beginPath();

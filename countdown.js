@@ -17,7 +17,7 @@ export const makeCountdown = (onCountdownFinish = () => {}) => {
         }
     }
 
-    const render = (ctx, camera) => {
+    const render = (ctx, camera, colorScheme) => {
         let countdownText;
         for (const { timer: textTimer , text } of texts) {
             if (timer < textTimer) {
@@ -28,7 +28,7 @@ export const makeCountdown = (onCountdownFinish = () => {}) => {
         ctx.font = fontName(50);
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
-        ctx.fillStyle = "white";
+        ctx.fillStyle = colorScheme.text;
         ctx.fillText(countdownText, camera.screenSize.x / 2, camera.screenSize.y / 4);
     }
 

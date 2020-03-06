@@ -66,8 +66,9 @@ export const makeProgressTracker = (parsedMapDefinition) => {
         );
     }
 
-    const renderCheckpoint = (checkpoint, radiusFactor, ctx) => {
-        ctx.fillStyle = "rgba(100, 255, 100, 0.5)";
+    const renderCheckpoint = (checkpoint, radiusFactor, ctx, colorScheme) => {
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = colorScheme.checkpointMarker;
         const radius = checkpoint.radius * Math.sin(radiusFactor * (0.5 * Math.PI));
         const partAngle = 2 * Math.PI / circleParts / 2;
         const center = checkpoint.position;
@@ -81,28 +82,29 @@ export const makeProgressTracker = (parsedMapDefinition) => {
             );
             ctx.fill();
         }
+        ctx.globalAlpha = 1;
     }
 
-    const renderCheckpoints = (ctx, camera) => {
+    const renderCheckpoints = (ctx, camera, colorScheme) => {
         camera.withFocus(ctx, () => {
             const radiusFactor = 1 - animationTimer / animationTime;
             const currentCheckpoint = getCurrentCheckpoint();
             if (!raceFinished) {
-                renderCheckpoint(currentCheckpoint, radiusFactor, ctx);
+                renderCheckpoint(currentCheckpoint, radiusFactor, ctx, colorScheme);
             }
             if (animationTimer > 0) {
                 const previousCheckpoint = getPreviousCheckpoint()
-                renderCheckpoint(previousCheckpoint, 1 - radiusFactor, ctx);
+                renderCheckpoint(previousCheckpoint, 1 - radiusFactor, ctx, colorScheme);
             }
         });
     };
 
-    const renderOverlay = (ctx, camera) => {
+    const renderOverlay = (ctx, camera, colorScheme) => {
         ctx.font = fontName(overlaySize / 2);
         ctx.textAlign = "left";
         ctx.textBaseline = "bottom";
 
-        ctx.fillStyle = "white";
+        ctx.fillStyle = colorScheme.text;
         if (!raceFinished) {
             ctx.fillText(
                 `Lap ${currentLap}/${laps}`,
@@ -139,7 +141,7 @@ export const makeProgressTracker = (parsedMapDefinition) => {
             ctx.translate(arrowPosition.x, arrowPosition.y);
             ctx.rotate(direction);
 
-            ctx.fillStyle = "lightgreen";
+            ctx.fillStyle = colorScheme.checkpointArrow;
             ctx.beginPath();
             ctx.moveTo(0, arrowSize);
             ctx.lineTo(arrowSize * 0.5, arrowSize);
