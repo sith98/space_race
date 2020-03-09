@@ -3,10 +3,10 @@ import { point } from "./Point.js";
 const easeFactor = 1.4;
 
 const easing = (value, lowerBound, upperBound, exponent) => {
-    if (value < lowerBound) {
+    if (value <= lowerBound) {
         return lowerBound;
     }
-    if (value > upperBound) {
+    if (value >= upperBound) {
         return upperBound;
     }
     const factor = (value - lowerBound) / (upperBound - lowerBound) * 2;
