@@ -4,6 +4,7 @@ import { makeCamera } from "./camera.js";
 import { makeCountdown } from "./countdown.js";
 import { makeProgressTracker } from "./progressTracker.js";
 import { playerColors } from "./colors.js";
+import { makeAnnouncementMsgDisplay } from "./announceMsgDisplay.js";
 
 export const State = Object.freeze({
     COUNTDOWN: 0,
@@ -16,7 +17,9 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
     let state = State.COUNTDOWN
     const colorScheme = playerColors.singlePlayer;
 
-    let countdown = makeCountdown(() => {
+    let announceMsgDisplay = makeAnnouncementMsgDisplay();
+
+    let countdown = makeCountdown(announceMsgDisplay, () => {
         state = State.GAME;
         progressTracker.startTimer();
     });
@@ -26,7 +29,7 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
         startPosition: map.startPosition,
         startRotation: map.startDirection,
     });
-    let progressTracker = makeProgressTracker(parsedMapDefinition);
+    let progressTracker = makeProgressTracker(parsedMapDefinition, announceMsgDisplay);
     
     let camera = makeCamera(dimension);
 
@@ -37,6 +40,7 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
         progressTracker.update(time);
         ship.update({ time, keyEventManager, map, gameState: state, progressTracker });
         countdown.update(time);
+        announceMsgDisplay.update(time);
     }
     const render = (ctx, scale) => {
         camera.focus(ship.position, map.dimension);
@@ -50,7 +54,8 @@ export const makeGameScreen = mapDefinition => ({ dimension, keyEventManager }) 
             map.renderForeground(ctx, camera, colorScheme);
             ship.render(ctx, camera, colorScheme);
             progressTracker.renderOverlay(ctx, camera, colorScheme);
-            countdown.render(ctx, camera, colorScheme);
+            //countdown.render(ctx, camera, colorScheme);
+            announceMsgDisplay.render(ctx, camera, colorScheme);
         }
         ctx.restore();
     };

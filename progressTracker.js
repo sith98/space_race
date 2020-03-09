@@ -19,7 +19,7 @@ const displayTime = ms => {
     return `${as2Digits(minutes)}:${as2Digits(seconds)}.${as2Digits(hundredths)}`;
 }
 
-export const makeProgressTracker = (parsedMapDefinition) => {
+export const makeProgressTracker = (parsedMapDefinition, msgDisplay) => {
     const { path: { checkpoints }, laps } = parsedMapDefinition;
     let index = 1;
     let animationTimer = 0;
@@ -44,6 +44,11 @@ export const makeProgressTracker = (parsedMapDefinition) => {
         }
         index = (index + 1) % checkpoints.length;
         animationTimer = animationTime;
+        if (laps > 1 && currentLap === laps && index === 1) {
+            msgDisplay.addMsg("FINAL LAP", {
+                idle: 2,
+            })
+        }
     }
 
     const startTimer = () => {
