@@ -79,15 +79,17 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
         if (state === State.DEAD) {
             return;
         }
-
+        
         // controls
         const timeFactor = time / DESIRED_FRAME_LENGTH;
 
-        if (keyEventManager.isPressed(LEFT)) {
-            desiredRotation -= Math.PI * rotationSpeed * timeFactor;
-        } else if (keyEventManager.isPressed(RIGHT)) {
-            desiredRotation += Math.PI * rotationSpeed * timeFactor;
-        }
+        if (gameState === GameState.GAME) {
+            if (keyEventManager.isPressed(LEFT)) {
+                desiredRotation -= Math.PI * rotationSpeed * timeFactor;
+            } else if (keyEventManager.isPressed(RIGHT)) {
+                desiredRotation += Math.PI * rotationSpeed * timeFactor;
+            }
+        }   
         rotation = mod(rotation, 2 * Math.PI);
         desiredRotation = mod(desiredRotation, 2 * Math.PI);
 
@@ -103,24 +105,31 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
             speed = speed.add(point(Math.cos(rotation), Math.sin(rotation)).mul(acceleration * timeFactor));
         }
         position = position.add(speed);
-        speed = speed.mul(keyEventManager.isPressed(DOWN) ? 1 - brakeFriction * timeFactor : 1 - friction * timeFactor);
+        const currentFriction = gameState === GameState.GAME && keyEventManager.isPressed(DOWN) ? brakeFriction : friction
+        speed = speed.mul(1 - currentFriction * timeFactor);
 
         // environment interactions
 
-        const { x: width, y: height } = map.dimension;
+        if (gameState === GameState.GAME) {
+            const { x: width, y: height } = map.dimension;
 
-        if (position.x < -deadBorder || position.x > width + deadBorder || position.y < -deadBorder || position.y > height + deadBorder) {
-            die();
-        }
+            if (position.x < -deadBorder || position.x > width + deadBorder || position.y < -deadBorder || position.y > height + deadBorder) {
+                die();
+            }
 
-        const currentCheckpoint = progressTracker.currentCheckpoint;
-        if (currentCheckpoint.position.sub(position).abs() <= currentCheckpoint.radius + checkpointBorder) {
-            progressTracker.advance();
+            const currentCheckpoint = progressTracker.currentCheckpoint;
+            if (currentCheckpoint.position.sub(position).abs() <= currentCheckpoint.radius + checkpointBorder) {
+                progressTracker.advance();
+            }
         }
 
         // cosmetics
 
-        plume = drive;
+        if (gameState === GameState.FINISHED) {
+            plume = false;
+        } else {
+            plume = drive;
+        }
     };
 
     const render = (ctx, camera, colorScheme) => {

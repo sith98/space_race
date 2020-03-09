@@ -1,5 +1,6 @@
 import { point } from "./Point.js";
 import { fontName } from "./constants.js";
+import { displayTime } from "./util.js";
 
 const animationTime = 0.4;
 const rotateSpeed = 0.3;
@@ -9,17 +10,7 @@ const arrowSize = 12;
 
 const overlaySize = 80;
 
-const displayTime = ms => {
-    const as2Digits = n => n >= 10 ? n.toString() : "0" + n.toString();
-
-    const hundredths = Math.floor(ms % 1000 / 10);
-    const totalSeconds = Math.floor(ms / 1000);
-    const seconds = totalSeconds % 60;
-    const minutes = Math.floor(totalSeconds / 60);
-    return `${as2Digits(minutes)}:${as2Digits(seconds)}.${as2Digits(hundredths)}`;
-}
-
-export const makeProgressTracker = (parsedMapDefinition, msgDisplay) => {
+export const makeProgressTracker = (parsedMapDefinition, msgDisplay, onFinished) => {
     const { path: { checkpoints }, laps } = parsedMapDefinition;
     let index = 1;
     let animationTimer = 0;
@@ -41,6 +32,7 @@ export const makeProgressTracker = (parsedMapDefinition, msgDisplay) => {
         if (currentLap > laps) {
             raceFinished = true;
             finishedTime = Date.now();
+            onFinished(finishedTime - startingTime);
         }
         index = (index + 1) % checkpoints.length;
         animationTimer = animationTime;

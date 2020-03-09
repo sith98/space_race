@@ -4,12 +4,13 @@ import { makeKeyEventManager } from "./keyEventManager.js";
 import { MAX_FRAME_LENGTH, DESIRED_FRAME_LENGTH } from "./constants.js";
 import { point } from "./Point.js";
 import maps from "./exampleMaps.js"
+import { makeSaveGame } from "./saveGame.js";
 
 const WIDTH = 800;
 const HEIGHT = 800;
 const SCALE = 1.5;
 
-let canvas, ctx, screen, keyEventManager;
+let canvas, ctx, screen, keyEventManager, saveGame;
 
 let lastFrame = undefined;
 
@@ -27,6 +28,8 @@ const main = () => {
     keyEventManager = makeKeyEventManager();
     keyEventManager.activate();
 
+    saveGame = makeSaveGame();
+
     initScreen(makeMainMenuScreen);
     globalThis.requestAnimationFrame(tick);
 }
@@ -43,7 +46,13 @@ const initScreen = (stateConstructor) => {
     screen = {
         update: () => {},
         render: () => {},
-        ...stateConstructor({ canvas, dimension: point(WIDTH, HEIGHT), keyEventManager, initScreen }),
+        ...stateConstructor({
+            canvas,
+            dimension: point(WIDTH, HEIGHT),
+            keyEventManager,
+            saveGame,
+            initScreen,
+        }),
     }
 }
 

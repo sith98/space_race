@@ -9,7 +9,7 @@ export const makeMainMenuScreen = ({ dimension, canvas, initScreen }) => {
 
     const buttons = Object.entries(exampleMaps).map(([name, map], index) => ({
         name,
-        map,
+        map: name,
         y: startY + index * mapTextHeight,
     }));
 
