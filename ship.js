@@ -83,7 +83,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
         // controls
         const timeFactor = time / DESIRED_FRAME_LENGTH;
 
-        if (gameState === GameState.GAME) {
+        if (gameState !== GameState.FINISHED) {
             if (keyEventManager.isPressed(LEFT)) {
                 desiredRotation -= Math.PI * rotationSpeed * timeFactor;
             } else if (keyEventManager.isPressed(RIGHT)) {
@@ -105,7 +105,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
             speed = speed.add(point(Math.cos(rotation), Math.sin(rotation)).mul(acceleration * timeFactor));
         }
         position = position.add(speed);
-        const currentFriction = gameState === GameState.GAME && keyEventManager.isPressed(DOWN) ? brakeFriction : friction
+        const currentFriction = gameState !== GameState.FINISHED && keyEventManager.isPressed(DOWN) ? brakeFriction : friction
         speed = speed.mul(1 - currentFriction * timeFactor);
 
         // environment interactions

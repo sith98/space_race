@@ -11,11 +11,15 @@ export const makeGameoverLayer = (onClick) => {
     let active = false;
     let info = undefined;
 
-    const update = (time) => {
+    const update = (time, click) => {
         if (!active) {
             return;
         }
         timer = Math.max(0, timer - time);
+
+        if (click !== undefined) {
+            onClick();
+        }
     }
 
     const start = (time, bestTime, isNewBestTime) => {

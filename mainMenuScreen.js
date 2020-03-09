@@ -4,30 +4,26 @@ import { makeGameScreen } from "./gameScreen.js";
 
 const mapTextHeight = 50;
 
-export const makeMainMenuScreen = ({ dimension, canvas, initScreen }) => {
+export const makeMainMenuScreen = ({ initScreen, dimension }) => {
     let startY = dimension.y * 0.3
 
-    const buttons = Object.entries(exampleMaps).map(([name, map], index) => ({
+    const buttons = Object.keys(exampleMaps).map((name, index) => ({
         name,
         map: name,
         y: startY + index * mapTextHeight,
     }));
 
-    const clickY = undefined;
-
-    const onClick = (evt) => {
-        const canvasY = evt.offsetY / canvas.height * dimension.y;
-        console.log(canvasY);
-        for (const { map, y } of buttons) {
-            if (canvasY > y && canvasY < y + mapTextHeight) {
-                canvas.removeEventListener("click", onClick);
-                initScreen(makeGameScreen(map));
-                return;
+    const update = (_, click) => {
+        if (click !== undefined) {
+            const { y: canvasY } = click;
+            for (const { map, y } of buttons) {
+                if (canvasY > y && canvasY < y + mapTextHeight) {
+                    initScreen(makeGameScreen(map));
+                    return;
+                }
             }
         }
     }
-
-    canvas.addEventListener("click", onClick);
 
     const render = (ctx, scale) => {
         ctx.save();
@@ -51,6 +47,7 @@ export const makeMainMenuScreen = ({ dimension, canvas, initScreen }) => {
     }
 
     return Object.freeze({
+        update,
         render,
     });
 }

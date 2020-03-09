@@ -5,12 +5,15 @@ import { MAX_FRAME_LENGTH, DESIRED_FRAME_LENGTH } from "./constants.js";
 import { point } from "./Point.js";
 import maps from "./exampleMaps.js"
 import { makeSaveGame } from "./saveGame.js";
+import { makeClickEventManager } from "./clickEventManager.js";
 
 const WIDTH = 800;
 const HEIGHT = 800;
 const SCALE = 1.5;
 
-let canvas, ctx, screen, keyEventManager, saveGame;
+const dimension = point(WIDTH, HEIGHT);
+
+let canvas, ctx, screen, keyEventManager, saveGame, clickEventManager;
 
 let lastFrame = undefined;
 
@@ -29,6 +32,7 @@ const main = () => {
     keyEventManager.activate();
 
     saveGame = makeSaveGame();
+    clickEventManager = makeClickEventManager(canvas, dimension)
 
     initScreen(makeMainMenuScreen);
     globalThis.requestAnimationFrame(tick);
@@ -48,7 +52,7 @@ const initScreen = (stateConstructor) => {
         render: () => {},
         ...stateConstructor({
             canvas,
-            dimension: point(WIDTH, HEIGHT),
+            dimension,
             keyEventManager,
             saveGame,
             initScreen,
@@ -57,7 +61,9 @@ const initScreen = (stateConstructor) => {
 }
 
 const update = (time) => {
-    screen.update(time);
+    const click = clickEventManager.fetchClick();
+    //console.log(clicks);
+    screen.update(time, click);
 }
 
 const render = () => {

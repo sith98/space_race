@@ -7,6 +7,7 @@ import { playerColors } from "./colors.js";
 import { makeAnnouncementMsgDisplay } from "./announceMsgDisplay.js";
 import exampleMaps from "./exampleMaps.js";
 import { makeGameoverLayer } from "./gameoverLayer.js";
+import { makeMainMenuScreen } from "./mainMenuScreen.js";
 
 export const State = Object.freeze({
     COUNTDOWN: 0,
@@ -16,7 +17,7 @@ export const State = Object.freeze({
 
 export const DEBUG = false;
 
-export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame }) => {
+export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame, initScreen }) => {
     // init state basics
     let state = State.COUNTDOWN
     const colorScheme = playerColors.singlePlayer;
@@ -42,7 +43,7 @@ export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame
     // init game objects
     let camera = makeCamera(dimension);
     let announceMsgDisplay = makeAnnouncementMsgDisplay();
-    let gameoverLayer = makeGameoverLayer(() => {});
+    let gameoverLayer = makeGameoverLayer(() => { initScreen(makeMainMenuScreen) });
 
     let countdown = makeCountdown(announceMsgDisplay, onCountdownOver);
     let map = makeMap(parsedMapDefinition);
@@ -55,13 +56,13 @@ export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame
 
     countdown.start();
 
-    const update = (time) => {
+    const update = (time, clicks) => {
         map.update(time);
         progressTracker.update(time);
         ship.update({ time, keyEventManager, map, gameState: state, progressTracker });
         countdown.update(time);
         announceMsgDisplay.update(time);
-        gameoverLayer.update(time);
+        gameoverLayer.update(time, clicks);
     }
     const render = (ctx, scale) => {
         camera.focus(ship.position, map.dimension);
