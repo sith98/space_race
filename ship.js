@@ -7,10 +7,11 @@ import { mod } from "./util.js";
 import { playerColors } from "./colors.js";
 
 const acceleration = 0.1;
-const rotationSpeed = 0.02;
 const friction = 0.01;
 const brakeFriction = 0.05;
-const angularInertia = 0.7;
+
+const angularAcceleration = 0.005;
+const angularFriction = 0.04;
 
 const deadTime = 1;
 const blinkTime = 1;
@@ -31,7 +32,7 @@ const State = Object.freeze({
 export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}) => {
     let position = startPosition;
     let rotation = startRotation;
-    let desiredRotation = startRotation;
+    let angularSpeed = 0;
     let speed = point(0, 0);
     let state = State.ALIVE;
     let timer = 0;
@@ -82,23 +83,15 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
         
         // controls
         const timeFactor = time / DESIRED_FRAME_LENGTH;
-
         if (gameState !== GameState.FINISHED) {
             if (keyEventManager.isPressed(LEFT)) {
-                desiredRotation -= Math.PI * rotationSpeed * timeFactor;
+                angularSpeed -= angularAcceleration;
             } else if (keyEventManager.isPressed(RIGHT)) {
-                desiredRotation += Math.PI * rotationSpeed * timeFactor;
+                angularSpeed += angularAcceleration;
             }
-        }   
-        rotation = mod(rotation, 2 * Math.PI);
-        desiredRotation = mod(desiredRotation, 2 * Math.PI);
-
-        const angleDifference = desiredRotation - rotation;
-        const normalizedAngleDifference =
-            angleDifference > Math.PI ? angleDifference - 2 * Math.PI :
-            angleDifference < -Math.PI ? angleDifference + 2 * Math.PI :
-            angleDifference;
-        rotation += (1 - angularInertia * timeFactor) * normalizedAngleDifference;
+        }
+        rotation = (rotation + angularSpeed) % (2 * Math.PI);
+        angularSpeed *= 1 - angularFriction;
 
         const drive = keyEventManager.isPressed(UP);
         if (drive && gameState === GameState.GAME) {
@@ -172,12 +165,12 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
             
             ctx.restore();
 
-            if (DEBUG) {
+            if (globalThis.debug && false) {
                 ctx.save();
                 ctx.translate(position.x, position.y);
                 ctx.rotate(desiredRotation);
                 
-                ctx.strokeStyle = color;
+                ctx.strokeStyle = "red";
                 ctx.lineWidth = 2;
     
                 ctx.beginPath();
