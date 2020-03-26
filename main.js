@@ -88,7 +88,9 @@ const update = (time) => {
     try {
         screen.update(time, click);
     } catch (e) {
-
+        if (!(e instanceof ScreenChangedError)) {
+            throw e;
+        }
     }
 }
 

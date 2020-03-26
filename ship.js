@@ -51,7 +51,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
             Math.min(mapDimension.y - recoverBorder, Math.max(recoverBorder, position.y)),
         );;
         // turn around
-        rotation = desiredRotation = newPosition.sub(position).angle();
+        rotation = newPosition.sub(position).angle();
         // move
         position = newPosition;
         // stop
