@@ -56,7 +56,19 @@ export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame
 
     countdown.start();
 
+    let nFrames = 0;
+    const maxNFrames = 30;
+    let elapsedTime = 0;
+    let fps = 60;
     const update = (time, clicks) => {
+        if (nFrames >= maxNFrames) {
+            fps = 1 / elapsedTime * maxNFrames;
+            nFrames = 0;
+            elapsedTime = 0;
+        }
+        elapsedTime += time;
+        nFrames += 1;
+
         map.update(time);
         progressTracker.update(time);
         ship.update({ time, keyEventManager, map, gameState: state, progressTracker });
@@ -86,6 +98,13 @@ export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame
             }
             announceMsgDisplay.render(ctx, camera, colorScheme);
             gameoverLayer.render(ctx, camera);
+            if (globalThis.debug) {
+                ctx.fillStyle = "white";
+                ctx.font = "10px Arial"
+                ctx.textAlign = "left";
+                ctx.textBaseline = "top";
+                ctx.fillText(fps.toFixed(0), 10, 10);
+            }
         }
         ctx.restore();
     };

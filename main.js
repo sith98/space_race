@@ -41,6 +41,7 @@ const main = () => {
 const tick = () => {
     const now = Date.now();
     const timePassed = lastFrame === undefined ? DESIRED_FRAME_LENGTH : (now - lastFrame) / 1000;
+    lastFrame = now;
     update(Math.min(timePassed, MAX_FRAME_LENGTH));
     render();
     globalThis.requestAnimationFrame(tick);
@@ -98,3 +99,4 @@ window.addEventListener("load", main);
 window.startMap = (mapName) => {
     screen = initScreen(makeGameScreen(maps[mapName]));
 }
+window.debug = true;
