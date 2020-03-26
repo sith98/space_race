@@ -20,10 +20,26 @@ window.easing = easing;
 
 export const makeCamera = (screenSize) => {
     let position = point(0, 0);
+    let zoomFactor = 1;
     
     const focus = (focusPosition, mapDimension) => {
-        const { x, y } = focusPosition.sub(screenSize.mul(0.5));
-        const maxPosition = mapDimension.sub(screenSize);
+        const scalingFactors = point(screenSize.x / mapDimension.x, screenSize.y / mapDimension.y)
+        const maxScaling = Math.max(scalingFactors.x, scalingFactors.y);
+
+        // if screen larger than map
+        let virtualScreenSize;
+        if (maxScaling > 1) {
+            zoomFactor = maxScaling;
+            const x = maxScaling === scalingFactors.x ? mapDimension.x : screenSize.x / maxScaling;
+            const y = maxScaling === scalingFactors.y ? mapDimension.y : screenSize.y / maxScaling;
+            virtualScreenSize = point(x, y);
+        } else {
+            virtualScreenSize = screenSize;
+            zoomFactor = 1;
+        }
+
+        const { x, y } = focusPosition.sub(virtualScreenSize.mul(0.5));
+        const maxPosition = mapDimension.sub(virtualScreenSize);
 
         position = point(
             easing(x, 0, maxPosition.x, easeFactor),
@@ -41,6 +57,7 @@ export const makeCamera = (screenSize) => {
     return Object.freeze({
         get position() { return position; },
         get screenSize() { return screenSize; },
+        get zoomFactor() { return zoomFactor; },
         focus,
         withFocus
     })

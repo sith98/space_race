@@ -67,14 +67,20 @@ export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame
     const render = (ctx, scale) => {
         camera.focus(ship.position, map.dimension);
         
+        const zoomFactor = camera.zoomFactor;
         ctx.save();
+        ctx.scale(scale, scale);
         {
-            ctx.scale(scale, scale);
+            ctx.save();
+            ctx.scale(zoomFactor, zoomFactor);
+            {
+                map.renderBackground(ctx, camera);
+                progressTracker.renderCheckpoints(ctx, camera, colorScheme);
+                map.renderForeground(ctx, camera, colorScheme);
+                ship.render(ctx, camera, colorScheme);
+            }
+            ctx.restore();            
 
-            map.renderBackground(ctx, camera);
-            progressTracker.renderCheckpoints(ctx, camera, colorScheme);
-            map.renderForeground(ctx, camera, colorScheme);
-            ship.render(ctx, camera, colorScheme);
             if (state !== State.FINISHED) {
                 progressTracker.renderOverlay(ctx, camera, colorScheme);
             }

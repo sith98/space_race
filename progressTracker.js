@@ -123,14 +123,15 @@ export const makeProgressTracker = (parsedMapDefinition, msgDisplay, onFinished)
 
         // render checkpoint arrow
         if (!raceFinished && animationTimer === 0 && !isCurrentCheckpointOnScreen(camera)) {
-            const checkpointPosition = getCurrentCheckpoint().position
-            const directionVector = checkpointPosition.sub(camera.position.add(camera.screenSize.mul(0.5)));
+            const checkpointPosition = getCurrentCheckpoint().position.mul(camera.zoomFactor);
+            const cameraPosition = camera.position.mul(camera.zoomFactor);
+            const directionVector = checkpointPosition.sub(cameraPosition.add(camera.screenSize.mul(0.5)));
             const direction = directionVector.angle();
 
             const topLeft = point(overlaySize, overlaySize);
             const bottomRight = camera.screenSize.sub(topLeft);
 
-            const arrowPosition = checkpointPosition.sub(camera.position)
+            const arrowPosition = checkpointPosition.sub(cameraPosition)
                 .clampInRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
             
             ctx.save();

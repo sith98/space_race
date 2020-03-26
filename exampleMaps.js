@@ -84,5 +84,18 @@ export default {
                 { x: 0, y: 500 },
             ]
         }
-    }
+    },
+    small: {
+        width: 0,
+        height: 1000,
+        padding: 300,
+        laps: 2,
+        path: {
+            defaultRadius: 100,
+            checkpoints: [
+                { x: 0, y: 0 },
+                { x: 0, y: 1000 },
+            ]
+        }
+    },
 }
