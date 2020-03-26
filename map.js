@@ -121,11 +121,17 @@ export const makeMap = (mapDefinition) => {
     }
 
     const renderBackground = (ctx, camera) => {
-        const backgroundX = -camera.position.x * paralaxFactor;
-        const backgroundY = -camera.position.y * paralaxFactor;
+        const backgroundX = camera.position.x * paralaxFactor;
+        const backgroundY = camera.position.y * paralaxFactor;
 
         // prerenderBackground(stars, ctx);
-        ctx.drawImage(starCanvas, backgroundX, backgroundY, width, height);
+        ctx.drawImage(
+            starCanvas,
+            backgroundX, backgroundY,
+            camera.screenSize.x, camera.screenSize.y,
+            0, 0,
+            camera.screenSize.x, camera.screenSize.y,
+        );
 
         camera.withFocus(ctx, () => {
             ctx.save();
