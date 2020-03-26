@@ -18,11 +18,12 @@ const easing = (value, lowerBound, upperBound, exponent) => {
 }
 window.easing = easing;
 
-export const makeCamera = (screenSize) => {
+export const makeCamera = (getDimension) => {
     let position = point(0, 0);
     let zoomFactor = 1;
     
     const focus = (focusPosition, mapDimension) => {
+        const screenSize = getDimension();
         const scalingFactors = point(screenSize.x / mapDimension.x, screenSize.y / mapDimension.y)
         const maxScaling = Math.max(scalingFactors.x, scalingFactors.y);
 
@@ -56,7 +57,7 @@ export const makeCamera = (screenSize) => {
 
     return Object.freeze({
         get position() { return position; },
-        get screenSize() { return screenSize; },
+        get screenSize() { return getDimension(); },
         get zoomFactor() { return zoomFactor; },
         focus,
         withFocus

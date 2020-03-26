@@ -88,23 +88,18 @@ export const makeMap = (mapDefinition) => {
     const { width, height, path, startDirection } = mapDefinition;
     const { checkpoints, spline } = path;
 
-    let lineOffset = 0
+    let lineOffset = 0;
 
-    const prerenderBackground = () => {
+    const stars = [];
+    for (let i = 0; i < width * height / 100 * starsPer100Pixels; i++) {
+        stars.push({
+            x: Math.round(Math.random() * width),
+            y: Math.round(Math.random() * height),
+            size: Math.random() < 1 / 3 ? 2 : 1,
+        });
+    }
 
-        const stars = [];
-        for (let i = 0; i < width * height / 100 * starsPer100Pixels; i++) {
-            stars.push({
-                x: Math.round(Math.random() * width),
-                y: Math.round(Math.random() * height),
-                size: Math.random() < 1 / 3 ? 2 : 1,
-            });
-        }
-        
-        const starCanvas = document.createElement("canvas");
-        starCanvas.width = width;
-        starCanvas.height = height;
-        const starCtx = starCanvas.getContext("2d");
+    const prerenderBackground = (stars, starCtx) => {        
         starCtx.fillStyle = "black";
         starCtx.fillRect(0, 0, width, height);
         starCtx.fillStyle = "white"
@@ -113,8 +108,13 @@ export const makeMap = (mapDefinition) => {
         }
         return starCanvas;
     }
+    
+    const starCanvas = document.createElement("canvas");
+    starCanvas.width = width;
+    starCanvas.height = height;
+    const starCtx = starCanvas.getContext("2d");
 
-    const starCanvas = prerenderBackground();
+    prerenderBackground(stars, starCtx);
 
     const update = (time) => {
         lineOffset = (lineOffset + time * dashSpeed) % totalDashLength;
@@ -124,6 +124,7 @@ export const makeMap = (mapDefinition) => {
         const backgroundX = -camera.position.x * paralaxFactor;
         const backgroundY = -camera.position.y * paralaxFactor;
 
+        // prerenderBackground(stars, ctx);
         ctx.drawImage(starCanvas, backgroundX, backgroundY, width, height);
 
         camera.withFocus(ctx, () => {

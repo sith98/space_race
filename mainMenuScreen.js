@@ -4,7 +4,8 @@ import { makeGameScreen } from "./gameScreen.js";
 
 const mapTextHeight = 50;
 
-export const makeMainMenuScreen = ({ initScreen, dimension }) => {
+export const makeMainMenuScreen = ({ initScreen, getDimension }) => {
+    const dimension = getDimension();
     let startY = dimension.y * 0.3
 
     const buttons = Object.keys(exampleMaps).map((name, index) => ({

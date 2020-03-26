@@ -1,8 +1,9 @@
 import { point } from "./Point.js";
 
-export const makeClickEventManager = (canvas, dimension) => {
+export const makeClickEventManager = (canvas, getDimension) => {
     let click = undefined;
     const onClick = (evt) => {
+        const dimension = getDimension();
         const x = evt.offsetX / canvas.width * dimension.x;
         const y = evt.offsetY / canvas.height * dimension.y;
         click = point(x, y);

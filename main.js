@@ -11,30 +11,34 @@ const WIDTH = 800;
 const HEIGHT = 800;
 const SCALE = 1.5;
 
-const dimension = point(WIDTH, HEIGHT);
+const defaultDimension = point(WIDTH, HEIGHT);
 
 let canvas, ctx, screen, keyEventManager, saveGame, clickEventManager;
 
 let lastFrame = undefined;
+let dimension = defaultDimension;
+let changedDimension = false;
 
 let lastWindowWidth = 0;
 let lastWindowHeight = 0;
+
+class ScreenChangedError extends Error {}
 
 const main = () => {
     canvas = document.createElement("canvas");
     ctx = canvas.getContext("2d");
 
-    canvas.width = WIDTH * SCALE;
-    canvas.height = HEIGHT * SCALE;
+    canvas.width = defaultDimension.x * SCALE;
+    canvas.height = defaultDimension.y * SCALE;
     document.body.appendChild(canvas);
 
     keyEventManager = makeKeyEventManager();
     keyEventManager.activate();
 
     saveGame = makeSaveGame();
-    clickEventManager = makeClickEventManager(canvas, dimension)
+    clickEventManager = makeClickEventManager(canvas, getDimension)
 
-    initScreen(makeMainMenuScreen);
+    manualInitScreen(makeMainMenuScreen);
     globalThis.requestAnimationFrame(tick);
 }
 
@@ -47,13 +51,16 @@ const tick = () => {
     globalThis.requestAnimationFrame(tick);
 }
 
-const initScreen = (stateConstructor) => {
+const manualInitScreen = (stateConstructor) => {
+    setDimension(defaultDimension);
     screen = {
         update: () => {},
         render: () => {},
         ...stateConstructor({
             canvas,
-            dimension,
+            getDimension,
+            setDimension,
+            getWindowAspectRatio,
             keyEventManager,
             saveGame,
             initScreen,
@@ -61,19 +68,37 @@ const initScreen = (stateConstructor) => {
     }
 }
 
+const initScreen = (stateConstructor) => {
+    manualInitScreen(stateConstructor);
+    throw new ScreenChangedError();
+}
+
+const getDimension = () => dimension;
+const setDimension = newDimension => {
+    if (!newDimension.equals(dimension)) {
+        changedDimension = true;
+    }
+    dimension = newDimension;
+}
+const getWindowAspectRatio = () => globalThis.innerWidth / globalThis.innerHeight;
+
 const update = (time) => {
     const click = clickEventManager.fetchClick();
     //console.log(clicks);
-    screen.update(time, click);
+    try {
+        screen.update(time, click);
+    } catch (e) {
+
+    }
 }
 
 const render = () => {
     const windowWidth = globalThis.innerWidth;
     const windowHeight = globalThis.innerHeight;
 
-    if (windowWidth != lastWindowWidth || windowHeight != lastWindowHeight) {
+    if (changedDimension || windowWidth != lastWindowWidth || windowHeight != lastWindowHeight) {
         const windowRatio = windowWidth / windowHeight;
-        const myRatio = WIDTH / HEIGHT;
+        const myRatio = dimension.x / dimension.y;
         const wider = windowRatio > myRatio;
         
         const width = wider ? windowHeight * myRatio : windowWidth;
@@ -88,10 +113,14 @@ const render = () => {
     lastWindowWidth = windowWidth;
     lastWindowHeight = windowHeight;    
 
-    const scale = canvas.width / WIDTH;
+    const scale = canvas.width / dimension.x;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     screen.render(ctx, scale);
+
+    if (changedDimension) {
+        changedDimension = false;
+    }
 }
 
 window.addEventListener("load", main);

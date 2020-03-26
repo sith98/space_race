@@ -8,6 +8,7 @@ import { makeAnnouncementMsgDisplay } from "./announceMsgDisplay.js";
 import exampleMaps from "./exampleMaps.js";
 import { makeGameoverLayer } from "./gameoverLayer.js";
 import { makeMainMenuScreen } from "./mainMenuScreen.js";
+import { point } from "./Point.js"
 
 export const State = Object.freeze({
     COUNTDOWN: 0,
@@ -17,7 +18,9 @@ export const State = Object.freeze({
 
 export const DEBUG = false;
 
-export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame, initScreen }) => {
+export const makeGameScreen = mapName => ({ getDimension, setDimension, getWindowAspectRatio, keyEventManager, saveGame, initScreen }) => {
+    const defaultDimension = getDimension();
+
     // init state basics
     let state = State.COUNTDOWN
     const colorScheme = playerColors.singlePlayer;
@@ -41,7 +44,7 @@ export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame
     }
 
     // init game objects
-    let camera = makeCamera(dimension);
+    let camera = makeCamera(getDimension);
     let announceMsgDisplay = makeAnnouncementMsgDisplay();
     let gameoverLayer = makeGameoverLayer(() => { initScreen(makeMainMenuScreen) });
 
@@ -75,6 +78,11 @@ export const makeGameScreen = mapName => ({ dimension, keyEventManager, saveGame
         countdown.update(time);
         announceMsgDisplay.update(time);
         gameoverLayer.update(time, clicks);
+        const aspectRatio = getWindowAspectRatio();
+        setDimension(point(
+            aspectRatio > 1 ? defaultDimension.x * aspectRatio : defaultDimension.x,
+            aspectRatio > 1 ? defaultDimension.y : defaultDimension.y / aspectRatio
+        ));
     }
     const render = (ctx, scale) => {
         camera.focus(ship.position, map.dimension);
