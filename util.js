@@ -6,6 +6,18 @@ export const clamp = (value, min, max) => {
     return Math.max(min, Math.min(value, max));
 }
 
+const ordinalRules = new Intl.PluralRules("en-US", { type: "ordinal" });
+const suffixes = {
+    "one": "st",
+    "two": "nd",
+    "few": "rd",
+    "other": "th",
+}
+
+export const displayOrdinalNumber = number => {
+    return number.toString() + suffixes[ordinalRules.select(number)];
+}
+
 export const displayTime = ms => {
     const as2Digits = n => n >= 10 ? n.toString() : "0" + n.toString();
 

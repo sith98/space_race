@@ -1,6 +1,6 @@
 import { point } from "./Point.js";
 import { fontName } from "./constants.js";
-import { displayTime } from "./util.js";
+import { displayTime, displayOrdinalNumber } from "./util.js";
 import { playerColors } from "./colors.js";
 
 const animationTime = 0.4;
@@ -11,8 +11,36 @@ const arrowSize = 12;
 
 const overlaySize = 80;
 
+
+const listComparison = (a, b, keys) => {
+    for (const key of keys) {
+        const value = key(a) - key(b);
+        if (value !== 0) {
+            return value;
+        }
+    }
+    return 0;
+}
+
+const compareProgresses = (a, b) => listComparison(
+    a, b,
+    [it => it.lap, it => it.checkpoint, it => -it.distance]
+)
+
+export const progressRanking = (progresses) => {
+    const copy = progresses.slice(0);
+    copy.sort(compareProgresses);
+    copy.reverse();
+    return progresses.map(progress => copy.indexOf(progress) + 1);
+}
+
 export const makeProgressTracker = ({
-    parsedMapDefinition, msgDisplay, onFinished, colorScheme = playerColors.singlePlayer, secondPlayer = false
+    parsedMapDefinition,
+    announcementMsgDisplay,
+    onFinished,
+    colorScheme = playerColors.singlePlayer,
+    multiplayer = false,
+    secondPlayer = false
 } = {}) => {
     const { path: { checkpoints }, laps } = parsedMapDefinition;
     let index = 1;
@@ -24,6 +52,7 @@ export const makeProgressTracker = ({
     let finishedTime = 0;
 
     let startingTime = undefined;
+    let rank = 1;
 
     const advance = () => {
         if (raceFinished) {
@@ -40,7 +69,7 @@ export const makeProgressTracker = ({
         index = (index + 1) % checkpoints.length;
         animationTimer = animationTime;
         if (laps > 1 && currentLap === laps && index === 1) {
-            msgDisplay.addMsg("FINAL LAP", {
+            announcementMsgDisplay.addMsg("FINAL LAP", {
                 idle: 2,
             })
         }
@@ -100,7 +129,7 @@ export const makeProgressTracker = ({
     };
 
     const renderOverlay = (ctx, camera) => {
-        ctx.font = fontName(overlaySize / 2);
+        ctx.font = fontName(overlaySize * 0.7);
         ctx.textAlign = "left";
         ctx.textBaseline = "bottom";
 
@@ -118,8 +147,9 @@ export const makeProgressTracker = ({
             (raceFinished ? finishedTime : Date.now()) - startingTime;
         
         ctx.textAlign = "right";
+        ctx.font = fontName(overlaySize * 0.7);
         ctx.fillText(
-            displayTime(elapsedTime),
+            multiplayer ? displayOrdinalNumber(rank) : displaydisplayTime(elapsedTime),
             camera.screenSize.x - overlaySize / 3,
             camera.screenSize.y - overlaySize / 3,
         );
@@ -170,5 +200,14 @@ export const makeProgressTracker = ({
         get currentCheckpoint() {
             return getCurrentCheckpoint();
         },
+        getProgress(shipPosition) {
+            return {
+                lap: currentLap,
+                checkpoint: index === 0 ? checkpoints.length : index,
+                distance: getCurrentCheckpoint().position.sub(shipPosition).abs()
+            }
+        },
+        get rank() { return rank; },
+        set rank(newValue) { rank = newValue; },
     })
 }

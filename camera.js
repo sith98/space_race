@@ -18,12 +18,27 @@ const easing = (value, lowerBound, upperBound, exponent) => {
 }
 window.easing = easing;
 
-export const makeCamera = (getDimension) => {
+const getCameraWindow = (screenSize, totalPlayers, playerIndex) => {
+    if (totalPlayers === 2) {
+        const wide = screenSize.x / screenSize.y > 1;
+        const size = wide ? point(screenSize.x / 2, screenSize.y) : point(screenSize.x, screenSize.y / 2);
+        if (wide) {
+            return [point(size.x, 0).mul(playerIndex), size]
+        } else {
+            return [point(0, size.y).mul(playerIndex), size];
+        }
+    } else {
+        return [point(0, 0), screenSize];
+    }
+}
+
+export const makeCamera = (getScreenSize, totalPlayers = 1, playerIndex = 0) => {
     let position = point(0, 0);
     let zoomFactor = 1;
+    let [windowOffset, screenSize] = getCameraWindow(getScreenSize(), totalPlayers, playerIndex);
     
     const focus = (focusPosition, mapDimension) => {
-        const screenSize = getDimension();
+        [windowOffset, screenSize] = getCameraWindow(getScreenSize(), totalPlayers, playerIndex);
         const scalingFactors = point(screenSize.x / mapDimension.x, screenSize.y / mapDimension.y)
         const maxScaling = Math.max(scalingFactors.x, scalingFactors.y);
 
@@ -48,6 +63,22 @@ export const makeCamera = (getDimension) => {
         );
     }
 
+    const withCamera = (ctx, callback) => {
+        ctx.save();
+        ctx.translate(windowOffset.x, windowOffset.y);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(screenSize.x, 0);
+        ctx.lineTo(screenSize.x, screenSize.y);
+        ctx.lineTo(0, screenSize.y);
+        ctx.closePath();
+        ctx.clip();
+
+        callback();
+
+        ctx.restore();
+    }
+
     const withFocus = (ctx, callback) => {
         ctx.save();
         ctx.translate(-position.x, -position.y);
@@ -57,9 +88,10 @@ export const makeCamera = (getDimension) => {
 
     return Object.freeze({
         get position() { return position; },
-        get screenSize() { return getDimension(); },
+        get screenSize() { return screenSize; },
         get zoomFactor() { return zoomFactor; },
         focus,
-        withFocus
+        withCamera,
+        withFocus,
     })
 }

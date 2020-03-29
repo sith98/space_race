@@ -27,14 +27,16 @@ const addMessages = (msgDisplay) => {
     })
 }
 
-export const makeCountdown = (announcementMsgDisplay, onCountdownFinish = () => {}) => {
+export const makeCountdown = (announcementMsgDisplays, onCountdownFinish = () => {}) => {
     let finished = false;
     let timer = 0;
 
     const start = () => {
         finished = false;
         timer = totalDelay;
-        addMessages(announcementMsgDisplay);
+        for (const display of announcementMsgDisplays) {
+            addMessages(display);
+        }        
     }
 
     const update = (time) => {

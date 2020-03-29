@@ -2,7 +2,7 @@ import { makeShip, getShipStartPositions } from "./ship.js";
 import { makeMap, parseJson } from "./map.js";
 import { makeCamera } from "./camera.js";
 import { makeCountdown } from "./countdown.js";
-import { makeProgressTracker } from "./progressTracker.js";
+import { makeProgressTracker, progressRanking } from "./progressTracker.js";
 import { playerColors } from "./colors.js";
 import { makeAnnouncementMsgDisplay } from "./announceMsgDisplay.js";
 import exampleMaps from "./exampleMaps.js";
@@ -46,19 +46,19 @@ export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, 
         gameoverLayer.start(time, saveGame.getBestTime(mapName), isNewBestTime);
     }
 
+    const nShips = multiplayer ? 2 : 1;
+
     // init game objects
-    let camera = makeCamera(getDimension);
-    let announceMsgDisplay = makeAnnouncementMsgDisplay();
     let gameoverLayer = makeGameoverLayer(() => { initScreen(makeMainMenuScreen) });
 
-    let countdown = makeCountdown(announceMsgDisplay, onCountdownOver);
     let map = makeMap(parsedMapDefinition);
-
-    const nShips = multiplayer ? 2 : 1;
 
     const startPositions = getShipStartPositions(nShips, map.startPosition, map.startDirection)
     const ships = []
     const progressTrackers = [];
+    const cameras = [];
+    const globalCamera = makeCamera(getDimension);
+    const announcementMsgDisplays = [];
     for (let i = 0; i < nShips; i++) {
         const colorScheme = multiplayer ? playerColors.multiplayer[i] : playerColors.singlePlayer
         const ship = makeShip({
@@ -68,14 +68,19 @@ export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, 
             colorScheme,
         });
         ships.push(ship);
+        const announcementMsgDisplay = makeAnnouncementMsgDisplay();
         progressTrackers.push(makeProgressTracker({
             parsedMapDefinition,
-            announceMsgDisplay,
+            announcementMsgDisplay,
             onFinished: onRaceFinished,
             colorScheme,
+            multiplayer,
             secondPlayer: multiplayer && i === 1,
         }));
+        cameras.push(makeCamera(getDimension, nShips, i))
+        announcementMsgDisplays.push(announcementMsgDisplay);
     }
+    let countdown = makeCountdown(announcementMsgDisplays, onCountdownOver);
 
     countdown.start();
 
@@ -83,6 +88,7 @@ export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, 
     const maxNFrames = 30;
     let elapsedTime = 0;
     let fps = 60;
+
     const update = (time, clicks) => {
         if (nFrames >= maxNFrames) {
             fps = 1 / elapsedTime * maxNFrames;
@@ -102,50 +108,67 @@ export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, 
         }
         
         countdown.update(time);
-        announceMsgDisplay.update(time);
+        for (const display of announcementMsgDisplays) {
+            display.update(time);
+        }
         gameoverLayer.update(time, clicks);
+
+        if (multiplayer) {
+            const progresses = ships.map((ship, index) => progressTrackers[index].getProgress(ship.position))
+            const ranks = progressRanking(progresses);
+            for (const [index, rank] of ranks.entries()) {
+                progressTrackers[index].rank = rank;
+            }
+        }
+
         const aspectRatio = getWindowAspectRatio();
         setDimension(point(
             aspectRatio > 1 ? defaultDimension.x * aspectRatio : defaultDimension.x,
             aspectRatio > 1 ? defaultDimension.y : defaultDimension.y / aspectRatio
         ));
     }
+
+
+
+
     const render = (ctx, scale) => {
-        camera.focus(ships[0].position, map.dimension);
-        
-        const zoomFactor = camera.zoomFactor;
         ctx.save();
         ctx.scale(scale, scale);
-        {
-            ctx.save();
-            ctx.scale(zoomFactor, zoomFactor);
-            {
-                map.renderBackground(ctx, camera);
-                for (const progressTracker of progressTrackers) {
-                    progressTracker.renderCheckpoints(ctx, camera);
+        for (const [index, camera] of cameras.entries()) {
+            const ship = ships[index];
+            camera.focus(ship.position, map.dimension);
+        
+            const zoomFactor = camera.zoomFactor;
+            camera.withCamera(ctx, () => {
+                ctx.save();
+                ctx.scale(zoomFactor, zoomFactor);
+                {
+                    map.renderBackground(ctx, camera);
+                    for (const progressTracker of progressTrackers) {
+                        progressTracker.renderCheckpoints(ctx, camera);
+                    }
+                    map.renderForeground(ctx, camera, colorScheme);
+                    for (const ship of ships) {
+                        ship.render(ctx, camera, colorScheme);
+                    }
                 }
-                map.renderForeground(ctx, camera, colorScheme);
-                for (const ship of ships) {
-                    ship.render(ctx, camera, colorScheme);
+                ctx.restore();            
+    
+                if (state !== State.FINISHED) {
+                    progressTrackers[index].renderOverlay(ctx, camera);
                 }
-            }
-            ctx.restore();            
-
-            if (state !== State.FINISHED) {
-                for (const progressTracker of progressTrackers) {
-                    progressTracker.renderOverlay(ctx, camera);
-                }                
-            }
-            announceMsgDisplay.render(ctx, camera, colorScheme);
-            gameoverLayer.render(ctx, camera);
-            if (globalThis.debug) {
-                ctx.fillStyle = "white";
-                ctx.font = "10px Arial"
-                ctx.textAlign = "left";
-                ctx.textBaseline = "top";
-                ctx.fillText(fps.toFixed(0), 10, 10);
-            }
+                announcementMsgDisplays[index].render(ctx, camera, colorScheme);
+            })
         }
+        globalCamera.focus(point(0, 0), map.dimension);
+        gameoverLayer.render(ctx, globalCamera);
+        if (globalThis.debug) {
+            ctx.fillStyle = "white";
+            ctx.font = "10px Arial"
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            ctx.fillText(fps.toFixed(0), 10, 10);
+        }   
         ctx.restore();
     };
     return {
