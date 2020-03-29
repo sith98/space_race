@@ -47,8 +47,15 @@ const tick = () => {
     const ms = Math.min(lastFrame === undefined ? DESIRED_FRAME_LENGTH : (now - lastFrame), MAX_FRAME_LENGTH);
     const timePassed = ms / 1000;
     lastFrame = now;
-    update(timePassed, ms);
-    render();
+    
+    try {
+        update(timePassed, ms);
+        render();
+    } catch (e) {
+        if (!(e instanceof ScreenChangedError)) {
+            throw e;
+        }
+    }
     globalThis.requestAnimationFrame(tick);
 }
 
@@ -86,13 +93,7 @@ const getWindowAspectRatio = () => globalThis.innerWidth / globalThis.innerHeigh
 const update = (time, ms) => {
     const click = clickEventManager.fetchClick();
     //console.log(clicks);
-    try {
-        screen.update(time, click, ms);
-    } catch (e) {
-        if (!(e instanceof ScreenChangedError)) {
-            throw e;
-        }
-    }
+    screen.update(time, click, ms);
 }
 
 const render = () => {
