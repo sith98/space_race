@@ -72,7 +72,7 @@ export const makeCamera = (getScreenSize, totalPlayers = 1, playerIndex = 0) => 
         ctx.lineTo(screenSize.x, screenSize.y);
         ctx.lineTo(0, screenSize.y);
         ctx.closePath();
-        ctx.clip();
+        ctx.clip();        
 
         callback();
 
@@ -86,6 +86,36 @@ export const makeCamera = (getScreenSize, totalPlayers = 1, playerIndex = 0) => 
         ctx.restore();
     }
 
+    const renderBorder = (ctx) => {
+        if (totalPlayers === 1) {
+            return;
+        }
+
+        const windowSize = getScreenSize();
+        const wide = windowSize.x > windowSize.y;
+
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 5;
+
+        ctx.beginPath();
+        if (playerIndex === 0) {
+            ctx.moveTo(screenSize.x, screenSize.y);
+            if (wide) {
+                ctx.lineTo(screenSize.x, 0);
+            } else {
+                ctx.lineTo(0, screenSize.y);
+            }
+        } else {
+            ctx.moveTo(0, 0);
+            if (wide) {
+                ctx.lineTo(0, screenSize.y);
+            } else {
+                ctx.lineTo(screenSize.x, 0);
+            }
+        }
+        ctx.stroke();
+    }
+
     return Object.freeze({
         get position() { return position; },
         get screenSize() { return screenSize; },
@@ -93,5 +123,6 @@ export const makeCamera = (getScreenSize, totalPlayers = 1, playerIndex = 0) => 
         focus,
         withCamera,
         withFocus,
+        renderBorder,
     })
 }
