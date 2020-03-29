@@ -27,3 +27,12 @@ export const displayTime = ms => {
     const minutes = Math.floor(totalSeconds / 60);
     return `${as2Digits(minutes)}:${as2Digits(seconds)}.${as2Digits(hundredths)}`;
 }
+
+export const shuffleArray = (array) => {
+    for (let index = array.length - 1; index >= 0; index--) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        const temp = array[index];
+        array[index] = array[randomIndex];
+        array[randomIndex] = temp;
+    }
+}

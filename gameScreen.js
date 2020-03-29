@@ -53,7 +53,7 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
 
     let map = makeMap(parsedMapDefinition);
 
-    const startPositions = getShipStartPositions(nShips, map.startPosition, map.startDirection)
+    const startPositions = getShipStartPositions(nShips, map.startPosition, map.startDirection);
     const ships = []
     const progressTrackers = [];
     const cameras = [];

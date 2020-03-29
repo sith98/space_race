@@ -3,7 +3,7 @@ import { LEFT, RIGHT, UP, DOWN } from "./keyEventManager.js";
 import { DESIRED_FRAME_LENGTH } from "./constants.js";
 import { makeProgressTracker } from "./progressTracker.js";
 import { State as GameState, DEBUG } from "./gameScreen.js";
-import { mod } from "./util.js";
+import { mod, shuffleArray } from "./util.js";
 import { playerColors } from "./colors.js";
 
 const acceleration = 0.1;
@@ -36,6 +36,7 @@ export const getShipStartPositions = (nShips, startPosition, startDirection) => 
     for (let i = 0; i < nShips; i++) {
         positions.push(anchor.add(distanceVector.mul(i)));
     }
+    shuffleArray(positions);
     return positions;
 }
 
