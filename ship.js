@@ -29,7 +29,24 @@ const State = Object.freeze({
     BLINKING: 2,
 });
 
-export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}) => {
+export const getShipStartPositions = (nShips, startPosition, startDirection) => {
+    const distanceVector = Point.unit(startDirection + Math.PI / 2).mul(shipSize * 4);
+    const anchor = startPosition.sub(distanceVector.mul(0.5 * (nShips - 1)));
+    const positions = []
+    for (let i = 0; i < nShips; i++) {
+        positions.push(anchor.add(distanceVector.mul(i)));
+    }
+    return positions;
+}
+
+export const makeShip = (
+    {
+        startPosition = point(0, 0),
+        startRotation = 0,
+        colorScheme = playerColors.singlePlayer,
+        controls = playerColors[0],
+    } = {}
+) => {
     let position = startPosition;
     let rotation = startRotation;
     let angularSpeed = 0;
@@ -85,21 +102,21 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
         // controls
         const timeFactor = time / DESIRED_FRAME_LENGTH;
         if (gameState !== GameState.FINISHED) {
-            if (keyEventManager.isPressed(LEFT)) {
+            if (keyEventManager.isPressed(controls.left)) {
                 angularSpeed -= angularAcceleration;
-            } else if (keyEventManager.isPressed(RIGHT)) {
+            } else if (keyEventManager.isPressed(controls.right)) {
                 angularSpeed += angularAcceleration;
             }
         }
         rotation = (rotation + angularSpeed) % (2 * Math.PI);
         angularSpeed *= 1 - angularFriction;
 
-        const drive = keyEventManager.isPressed(UP);
+        const drive = keyEventManager.isPressed(controls.up);
         if (drive && gameState === GameState.GAME) {
             speed = speed.add(point(Math.cos(rotation), Math.sin(rotation)).mul(acceleration * timeFactor));
         }
         position = position.add(speed);
-        const currentFriction = gameState !== GameState.FINISHED && keyEventManager.isPressed(DOWN) ? brakeFriction : friction
+        const currentFriction = gameState !== GameState.FINISHED && keyEventManager.isPressed(controls.down) ? brakeFriction : friction
         speed = speed.mul(1 - currentFriction * timeFactor);
 
         // environment interactions
@@ -126,7 +143,7 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
         }
     };
 
-    const render = (ctx, camera, colorScheme) => {
+    const render = (ctx, camera) => {
 
         if (state === State.DEAD || state === State.BLINKING && Math.floor(timer / blinkRate) % 2 === 0) {
             return;

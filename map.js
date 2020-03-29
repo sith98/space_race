@@ -1,5 +1,6 @@
 import { point } from "./Point.js";
 import { mod } from "./util.js";
+import { checkpointDotColor } from "./colors.js";
 
 const dashSpeed = 80;
 const dashes = [15, 20];
@@ -152,7 +153,7 @@ export const makeMap = (mapDefinition) => {
 
     const renderForeground = (ctx, camera, colorScheme) => {
         camera.withFocus(ctx, () => {
-            ctx.fillStyle = colorScheme.checkpoint;
+            ctx.fillStyle = checkpointDotColor;
             for (const [i, checkpoint] of checkpoints.entries()) {
                 const radius = i === 0 ? finishCheckpointDotRadius : checkpointDotRadius;
                 ctx.beginPath();

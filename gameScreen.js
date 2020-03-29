@@ -1,4 +1,4 @@
-import { makeShip } from "./ship.js";
+import { makeShip, getShipStartPositions } from "./ship.js";
 import { makeMap, parseJson } from "./map.js";
 import { makeCamera } from "./camera.js";
 import { makeCountdown } from "./countdown.js";
@@ -9,6 +9,7 @@ import exampleMaps from "./exampleMaps.js";
 import { makeGameoverLayer } from "./gameoverLayer.js";
 import { makeMainMenuScreen } from "./mainMenuScreen.js";
 import { point } from "./Point.js"
+import { playerControls } from "./keyEventManager.js";
 
 export const State = Object.freeze({
     COUNTDOWN: 0,
@@ -18,7 +19,7 @@ export const State = Object.freeze({
 
 export const DEBUG = false;
 
-export const makeGameScreen = mapName => ({ getDimension, setDimension, getWindowAspectRatio, keyEventManager, saveGame, initScreen }) => {
+export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, setDimension, getWindowAspectRatio, keyEventManager, saveGame, initScreen }) => {
     const defaultDimension = getDimension();
 
     // init state basics
@@ -30,7 +31,9 @@ export const makeGameScreen = mapName => ({ getDimension, setDimension, getWindo
     // state changes
     const onCountdownOver = () => {
         state = State.GAME;
-        progressTracker.startTimer();
+        for (const progressTracker of progressTrackers) {
+            progressTracker.startTimer();
+        }
     }
 
     const onRaceFinished = (time) => {
@@ -50,12 +53,29 @@ export const makeGameScreen = mapName => ({ getDimension, setDimension, getWindo
 
     let countdown = makeCountdown(announceMsgDisplay, onCountdownOver);
     let map = makeMap(parsedMapDefinition);
-    let ship = makeShip({
-        startPosition: map.startPosition,
-        startRotation: map.startDirection,
-    });
-    let progressTracker = makeProgressTracker(parsedMapDefinition, announceMsgDisplay, onRaceFinished);
-    
+
+    const nShips = multiplayer ? 2 : 1;
+
+    const startPositions = getShipStartPositions(nShips, map.startPosition, map.startDirection)
+    const ships = []
+    const progressTrackers = [];
+    for (let i = 0; i < nShips; i++) {
+        const colorScheme = multiplayer ? playerColors.multiplayer[i] : playerColors.singlePlayer
+        const ship = makeShip({
+            startPosition: startPositions[i],
+            startRotation: map.startDirection,
+            controls: playerControls[i],
+            colorScheme,
+        });
+        ships.push(ship);
+        progressTrackers.push(makeProgressTracker({
+            parsedMapDefinition,
+            announceMsgDisplay,
+            onFinished: onRaceFinished,
+            colorScheme,
+            secondPlayer: multiplayer && i === 1,
+        }));
+    }
 
     countdown.start();
 
@@ -73,8 +93,14 @@ export const makeGameScreen = mapName => ({ getDimension, setDimension, getWindo
         nFrames += 1;
 
         map.update(time);
-        progressTracker.update(time);
-        ship.update({ time, keyEventManager, map, gameState: state, progressTracker });
+        for (const progressTracker of progressTrackers) {
+            progressTracker.update(time);
+        }
+        
+        for (const [index, ship] of ships.entries()) {
+            ship.update({ time, keyEventManager, map, gameState: state, progressTracker: progressTrackers[index] });
+        }
+        
         countdown.update(time);
         announceMsgDisplay.update(time);
         gameoverLayer.update(time, clicks);
@@ -85,7 +111,7 @@ export const makeGameScreen = mapName => ({ getDimension, setDimension, getWindo
         ));
     }
     const render = (ctx, scale) => {
-        camera.focus(ship.position, map.dimension);
+        camera.focus(ships[0].position, map.dimension);
         
         const zoomFactor = camera.zoomFactor;
         ctx.save();
@@ -95,14 +121,20 @@ export const makeGameScreen = mapName => ({ getDimension, setDimension, getWindo
             ctx.scale(zoomFactor, zoomFactor);
             {
                 map.renderBackground(ctx, camera);
-                progressTracker.renderCheckpoints(ctx, camera, colorScheme);
+                for (const progressTracker of progressTrackers) {
+                    progressTracker.renderCheckpoints(ctx, camera);
+                }
                 map.renderForeground(ctx, camera, colorScheme);
-                ship.render(ctx, camera, colorScheme);
+                for (const ship of ships) {
+                    ship.render(ctx, camera, colorScheme);
+                }
             }
             ctx.restore();            
 
             if (state !== State.FINISHED) {
-                progressTracker.renderOverlay(ctx, camera, colorScheme);
+                for (const progressTracker of progressTrackers) {
+                    progressTracker.renderOverlay(ctx, camera);
+                }                
             }
             announceMsgDisplay.render(ctx, camera, colorScheme);
             gameoverLayer.render(ctx, camera);

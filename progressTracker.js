@@ -1,6 +1,7 @@
 import { point } from "./Point.js";
 import { fontName } from "./constants.js";
 import { displayTime } from "./util.js";
+import { playerColors } from "./colors.js";
 
 const animationTime = 0.4;
 const rotateSpeed = 0.3;
@@ -10,7 +11,9 @@ const arrowSize = 12;
 
 const overlaySize = 80;
 
-export const makeProgressTracker = (parsedMapDefinition, msgDisplay, onFinished) => {
+export const makeProgressTracker = ({
+    parsedMapDefinition, msgDisplay, onFinished, colorScheme = playerColors.singlePlayer, secondPlayer = false
+} = {}) => {
     const { path: { checkpoints }, laps } = parsedMapDefinition;
     let index = 1;
     let animationTimer = 0;
@@ -63,13 +66,13 @@ export const makeProgressTracker = (parsedMapDefinition, msgDisplay, onFinished)
         );
     }
 
-    const renderCheckpoint = (checkpoint, radiusFactor, ctx, colorScheme) => {
+    const renderCheckpoint = (checkpoint, radiusFactor, ctx) => {
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = colorScheme.checkpointMarker;
         const radius = checkpoint.radius * Math.sin(radiusFactor * (0.5 * Math.PI));
         const partAngle = 2 * Math.PI / circleParts / 2;
         const center = checkpoint.position;
-        const offset = rotateOffset * partAngle * 2;
+        const offset = (rotateOffset + (secondPlayer ? 0.5 : 0)) * partAngle * 2;
         for (let i = 0; i < circleParts; i++) {
             ctx.beginPath();
             ctx.moveTo(center.x, center.y);
@@ -82,7 +85,7 @@ export const makeProgressTracker = (parsedMapDefinition, msgDisplay, onFinished)
         ctx.globalAlpha = 1;
     }
 
-    const renderCheckpoints = (ctx, camera, colorScheme) => {
+    const renderCheckpoints = (ctx, camera) => {
         camera.withFocus(ctx, () => {
             const radiusFactor = 1 - animationTimer / animationTime;
             const currentCheckpoint = getCurrentCheckpoint();
@@ -96,7 +99,7 @@ export const makeProgressTracker = (parsedMapDefinition, msgDisplay, onFinished)
         });
     };
 
-    const renderOverlay = (ctx, camera, colorScheme) => {
+    const renderOverlay = (ctx, camera) => {
         ctx.font = fontName(overlaySize / 2);
         ctx.textAlign = "left";
         ctx.textBaseline = "bottom";

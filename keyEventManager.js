@@ -2,6 +2,27 @@ export const UP = 38;
 export const DOWN = 40;
 export const LEFT = 37;
 export const RIGHT = 39;
+
+export const W = 87;
+export const A = 65;
+export const S = 83;
+export const D = 68;
+
+export const playerControls = [
+    {
+        up: UP,
+        down: DOWN,
+        left: LEFT,
+        right: RIGHT,
+    },
+    {
+        up: W,
+        down: S,
+        left: A,
+        right: D,
+    },
+]
+
 export const makeKeyEventManager = () => {
     const pressedKeys = new Set();
 
