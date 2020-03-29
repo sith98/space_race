@@ -1,7 +1,7 @@
 export const checkpointDotColor = "#c69700";
 
 export const playerColors = {
-    singlePlayer: {
+    singleplayer: {
         name: "Ship",
         ship: "#f3e2dc",
         plume: "#efd451",

@@ -24,7 +24,7 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
 
     // init state basics
     let state = State.COUNTDOWN
-    const colorScheme = playerColors.singlePlayer;
+    const colorScheme = playerColors.singleplayer;
     const mapDefinition = exampleMaps[mapName];
     const parsedMapDefinition = parseJson(mapDefinition);
 
@@ -60,11 +60,11 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
     const globalCamera = makeCamera(getDimension);
     const announcementMsgDisplays = [];
     for (let i = 0; i < nShips; i++) {
-        const colorScheme = multiplayer ? playerColors.multiplayer[i] : playerColors.singlePlayer
+        const colorScheme = multiplayer ? playerColors.multiplayer[i] : playerColors.singleplayer
         const ship = makeShip({
             startPosition: startPositions[i],
             startRotation: map.startDirection,
-            controls: playerControls[i],
+            controls: multiplayer ? playerControls.multiplayer[i] : playerColors.singleplayer,
             colorScheme,
         });
         ships.push(ship);

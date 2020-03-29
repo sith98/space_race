@@ -8,20 +8,23 @@ export const A = 65;
 export const S = 83;
 export const D = 68;
 
-export const playerControls = [
-    {
-        up: UP,
-        down: DOWN,
-        left: LEFT,
-        right: RIGHT,
-    },
-    {
-        up: W,
-        down: S,
-        left: A,
-        right: D,
-    },
-]
+const playerControlsArrows = {
+    up: UP,
+    down: DOWN,
+    left: LEFT,
+    right: RIGHT,
+};
+const playerControlsWasd = {
+    up: W,
+    down: S,
+    left: A,
+    right: D,
+};
+
+export const playerControls = {
+    singleplayer: playerControlsArrows,
+    multiplayer: [playerControlsWasd, playerControlsArrows],
+}
 
 export const makeKeyEventManager = () => {
     const pressedKeys = new Set();
