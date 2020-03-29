@@ -14,14 +14,22 @@ export const makeMainMenuScreen = ({ initScreen, getDimension }) => {
         y: startY + index * mapTextHeight,
     }));
 
+    const multiplayerTop = dimension.y * 0.9;
+    const multiplayerBottom = dimension.y * 0.95;
+
+    let multiplayer = false;
+
     const update = (_, click) => {
         if (click !== undefined) {
             const { y: canvasY } = click;
             for (const { map, y } of buttons) {
                 if (canvasY > y && canvasY < y + mapTextHeight) {
-                    initScreen(makeGameScreen(map));
+                    initScreen(makeGameScreen(map, multiplayer));
                     return;
                 }
+            }
+            if (multiplayerTop <= canvasY && canvasY <= multiplayerBottom) {
+                multiplayer = !multiplayer;
             }
         }
     }
@@ -43,6 +51,9 @@ export const makeMainMenuScreen = ({ initScreen, getDimension }) => {
             ctx.fillText(name, dimension.x * 0.5, y + 0.5 * mapTextHeight)
         }
 
+        ctx.textBaseLine = "center";
+        ctx.font = fontName((multiplayerBottom - multiplayerTop) * 0.8);
+        ctx.fillText(multiplayer ? "Multiplayer" : "Singleplayer", dimension.y * 0.5, (multiplayerBottom + multiplayerTop) / 2);
 
         ctx.restore();
     }
