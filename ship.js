@@ -49,13 +49,14 @@ export const makeShip = ({ startPosition = point(0, 0), startRotation = 0 } = {}
         const newPosition = point(
             Math.min(mapDimension.x - recoverBorder, Math.max(recoverBorder, position.x)),
             Math.min(mapDimension.y - recoverBorder, Math.max(recoverBorder, position.y)),
-        );;
+        );
         // turn around
         rotation = newPosition.sub(position).angle();
         // move
         position = newPosition;
         // stop
         speed = point(0, 0);
+        angularSpeed = 0;
     }
 
     const stopBlinking = () => {
