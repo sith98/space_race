@@ -11,6 +11,12 @@ const arrowSize = 12;
 
 const overlaySize = 80;
 
+const State = Object.freeze({
+    NOT_STARTED: 0,
+    ONGOING: 1,
+    FINISHED: 2,
+})
+
 
 const listComparison = (a, b, keys) => {
     for (const key of keys) {
@@ -48,23 +54,22 @@ export const makeProgressTracker = ({
     let rotateOffset = 0;
     let currentLap = 1;
 
-    let raceFinished = false;
-    let finishedTime = 0;
+    let state = State.NOT_STARTED;
 
     let startingTime = undefined;
+    let elapsedTime = 0;
     let rank = 1;
 
     const advance = () => {
-        if (raceFinished) {
+        if (state === State.FINISHED) {
             return;
         }
         if (index === 0) {
             currentLap += 1;
         }
         if (currentLap > laps) {
-            raceFinished = true;
-            finishedTime = Date.now();
-            onFinished(finishedTime - startingTime);
+            state = State.FINISHED;
+            onFinished(elapsedTime);
         }
         index = (index + 1) % checkpoints.length;
         animationTimer = animationTime;
@@ -76,10 +81,14 @@ export const makeProgressTracker = ({
     }
 
     const startTimer = () => {
-        startingTime = Date.now();
+        state = State.ONGOING;
     }
 
-    const update = (time) => {
+    const update = (ms) => {
+        if (state === State.ONGOING) {
+            elapsedTime += ms;
+        }
+        const time = ms / 1000;
         animationTimer = Math.max(animationTimer - time, 0);
         rotateOffset = (rotateOffset + time * rotateSpeed) % 1;
     }
@@ -118,7 +127,7 @@ export const makeProgressTracker = ({
         camera.withFocus(ctx, () => {
             const radiusFactor = 1 - animationTimer / animationTime;
             const currentCheckpoint = getCurrentCheckpoint();
-            if (!raceFinished) {
+            if (state !== State.FINISHED) {
                 renderCheckpoint(currentCheckpoint, radiusFactor, ctx, colorScheme);
             }
             if (animationTimer > 0) {
@@ -134,7 +143,7 @@ export const makeProgressTracker = ({
         ctx.textBaseline = "bottom";
 
         ctx.fillStyle = colorScheme.text;
-        if (!raceFinished) {
+        if (state !== State.FINISHED) {
             ctx.fillText(
                 `Lap ${currentLap}/${laps}`,
                 overlaySize / 3,
@@ -142,20 +151,16 @@ export const makeProgressTracker = ({
             );
         }
         
-        const elapsedTime = 
-            startingTime === undefined ? 0 :
-            (raceFinished ? finishedTime : Date.now()) - startingTime;
-        
         ctx.textAlign = "right";
         ctx.font = fontName(overlaySize * 0.7);
         ctx.fillText(
-            multiplayer ? displayOrdinalNumber(rank) : displaydisplayTime(elapsedTime),
+            multiplayer ? displayOrdinalNumber(rank) : displayTime(elapsedTime),
             camera.screenSize.x - overlaySize / 3,
             camera.screenSize.y - overlaySize / 3,
         );
 
         // render checkpoint arrow
-        if (!raceFinished && animationTimer === 0 && !isCurrentCheckpointOnScreen(camera)) {
+        if (state !== State.FINISHED && animationTimer === 0 && !isCurrentCheckpointOnScreen(camera)) {
             const checkpointPosition = getCurrentCheckpoint().position.mul(camera.zoomFactor);
             const cameraPosition = camera.position.mul(camera.zoomFactor);
             const directionVector = checkpointPosition.sub(cameraPosition.add(camera.screenSize.mul(0.5)));

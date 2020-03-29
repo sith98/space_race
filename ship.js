@@ -100,7 +100,7 @@ export const makeShip = (
         }
         
         // controls
-        const timeFactor = time / DESIRED_FRAME_LENGTH;
+        const timeFactor = time / (DESIRED_FRAME_LENGTH / 1000);
         if (gameState !== GameState.FINISHED) {
             if (keyEventManager.isPressed(controls.left)) {
                 angularSpeed -= angularAcceleration;

@@ -1,4 +1,4 @@
-export const checkpointDotColor = "#fff829";
+export const checkpointDotColor = "#c69700";
 
 export const playerColors = {
     singlePlayer: {

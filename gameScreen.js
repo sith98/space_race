@@ -19,7 +19,7 @@ export const State = Object.freeze({
 
 export const DEBUG = false;
 
-export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, setDimension, getWindowAspectRatio, keyEventManager, saveGame, initScreen }) => {
+export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension, setDimension, getWindowAspectRatio, keyEventManager, saveGame, initScreen }) => {
     const defaultDimension = getDimension();
 
     // init state basics
@@ -89,7 +89,10 @@ export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, 
     let elapsedTime = 0;
     let fps = 60;
 
-    const update = (time, clicks) => {
+
+
+
+    const update = (time, clicks, ms) => {
         if (nFrames >= maxNFrames) {
             fps = 1 / elapsedTime * maxNFrames;
             nFrames = 0;
@@ -100,7 +103,7 @@ export const makeGameScreen = (mapName, multiplayer = true) => ({ getDimension, 
 
         map.update(time);
         for (const progressTracker of progressTrackers) {
-            progressTracker.update(time);
+            progressTracker.update(ms);
         }
         
         for (const [index, ship] of ships.entries()) {
