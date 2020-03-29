@@ -69,7 +69,7 @@ export const makeProgressTracker = ({
         }
         if (currentLap > laps) {
             state = State.FINISHED;
-            onFinished(elapsedTime);
+            onFinished(elapsedTime, colorScheme.name);
         }
         index = (index + 1) % checkpoints.length;
         animationTimer = animationTime;

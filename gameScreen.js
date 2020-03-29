@@ -36,22 +36,22 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
         }
     }
 
-    const onRaceFinished = (time) => {
+    const onRaceFinished = (time, playerName) => {
         state = State.FINISHED;
         const bestTime = saveGame.getBestTime(mapName);
         const isNewBestTime = bestTime === undefined || time < bestTime;
         if (isNewBestTime) {
             saveGame.setBestTime(mapName, time);
         }
-        gameoverLayer.start(time, saveGame.getBestTime(mapName), isNewBestTime);
+        gameoverLayer.start(time, saveGame.getBestTime(mapName), isNewBestTime, playerName);
     }
 
     const nShips = multiplayer ? 2 : 1;
 
     // init game objects
-    let gameoverLayer = makeGameoverLayer(() => { initScreen(makeMainMenuScreen) });
+    const gameoverLayer = makeGameoverLayer(multiplayer, () => { initScreen(makeMainMenuScreen) });
 
-    let map = makeMap(parsedMapDefinition);
+    const map = makeMap(parsedMapDefinition);
 
     const startPositions = getShipStartPositions(nShips, map.startPosition, map.startDirection);
     const ships = []
@@ -80,7 +80,7 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
         cameras.push(makeCamera(getDimension, nShips, i))
         announcementMsgDisplays.push(announcementMsgDisplay);
     }
-    let countdown = makeCountdown(announcementMsgDisplays, onCountdownOver);
+    const countdown = makeCountdown(announcementMsgDisplays, onCountdownOver);
 
     countdown.start();
 

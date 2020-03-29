@@ -5,7 +5,7 @@ const bgColor = "rgba(0, 0, 0, 0.5)"
 
 const animationTime = 1;
 
-export const makeGameoverLayer = (onClick) => {
+export const makeGameoverLayer = (multiplayer, onClick) => {
     let timer = 0;
 
     let active = false;
@@ -22,17 +22,17 @@ export const makeGameoverLayer = (onClick) => {
         }
     }
 
-    const start = (time, bestTime, isNewBestTime) => {
+    const start = (time, bestTime, isNewBestTime, playerName) => {
         active = true;
         timer = animationTime;
-        info = { time, bestTime, isNewBestTime }
+        info = { time, bestTime, isNewBestTime, playerName }
     }
 
     const render = (ctx, camera) => {
         if (!active) {
             return;
         }
-        const { time, bestTime, isNewBestTime } = info;
+        const { time, bestTime, isNewBestTime, playerName } = info;
         const { screenSize } = camera;
 
         ctx.save();
@@ -46,8 +46,14 @@ export const makeGameoverLayer = (onClick) => {
 
         const baseSize = screenSize.y * 0.1;
         
+        
+        if (multiplayer) {
+            ctx.font = fontName(baseSize * 1.2);
+            ctx.fillText(playerName + " wins!", screenSize.x / 2, screenSize.y * 0.25);
+        }
+
         ctx.font = fontName(baseSize);
-        ctx.fillText(displayTime(time), screenSize.x / 2, screenSize.y * 0.3);
+        ctx.fillText(displayTime(time), screenSize.x / 2, multiplayer ? screenSize.y * 0.4 : screenSize.y * 0.3);
 
         ctx.font = fontName(baseSize * 0.7);
         const bestTimeText = isNewBestTime ? "New Best Time!" : "Best Time: " + displayTime(bestTime);
