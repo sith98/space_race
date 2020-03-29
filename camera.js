@@ -94,6 +94,8 @@ export const makeCamera = (getScreenSize, totalPlayers = 1, playerIndex = 0) => 
         const windowSize = getScreenSize();
         const wide = windowSize.x > windowSize.y;
 
+        ctx.save();
+        ctx.translate(windowOffset.x, windowOffset.y);
         ctx.strokeStyle = "white";
         ctx.lineWidth = 5;
 
@@ -114,6 +116,8 @@ export const makeCamera = (getScreenSize, totalPlayers = 1, playerIndex = 0) => 
             }
         }
         ctx.stroke();
+
+        ctx.restore();
     }
 
     return Object.freeze({

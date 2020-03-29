@@ -161,8 +161,8 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
                     progressTrackers[index].renderOverlay(ctx, camera);
                 }
                 announcementMsgDisplays[index].render(ctx, camera, colorScheme);
-                camera.renderBorder(ctx);
-            })
+            });
+            camera.renderBorder(ctx);
         }
         globalCamera.focus(point(0, 0), map.dimension);
         gameoverLayer.render(ctx, globalCamera);
