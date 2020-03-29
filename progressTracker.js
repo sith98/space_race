@@ -56,7 +56,6 @@ export const makeProgressTracker = ({
 
     let state = State.NOT_STARTED;
 
-    let startingTime = undefined;
     let elapsedTime = 0;
     let rank = 1;
 
@@ -138,7 +137,7 @@ export const makeProgressTracker = ({
     };
 
     const renderOverlay = (ctx, camera) => {
-        ctx.font = fontName(overlaySize * 0.7);
+        ctx.font = fontName(overlaySize * 0.6);
         ctx.textAlign = "left";
         ctx.textBaseline = "bottom";
 
@@ -152,12 +151,22 @@ export const makeProgressTracker = ({
         }
         
         ctx.textAlign = "right";
-        ctx.font = fontName(overlaySize * 0.7);
+        ctx.font = fontName(overlaySize * 0.6);
         ctx.fillText(
-            multiplayer ? displayOrdinalNumber(rank) : displayTime(elapsedTime),
+            displayTime(elapsedTime),
             camera.screenSize.x - overlaySize / 3,
             camera.screenSize.y - overlaySize / 3,
         );
+
+        if (multiplayer) {
+            ctx.textBaseline = "top";
+            ctx.font = fontName(overlaySize * 1);
+            ctx.fillText(
+                displayOrdinalNumber(rank),
+                camera.screenSize.x - overlaySize / 3,
+                overlaySize / 3,
+            );
+        }
 
         // render checkpoint arrow
         if (state !== State.FINISHED && animationTimer === 0 && !isCurrentCheckpointOnScreen(camera)) {
