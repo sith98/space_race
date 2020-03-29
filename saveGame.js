@@ -1,27 +1,33 @@
-const bestTimeKey = "BEST_TIMES"
+const bestTimeKey = "BEST_TIMES";
+const multiplayerKey = "MULTIPLAYER";
 
-const loadOr = (key, lazyDefault) => {
+const load = (key, lazyDefault) => {
     const lsValue = localStorage.getItem(key);
-    return lsValue === null ?
+    let value = lsValue === null ?
         (typeof lazyDefault === "function" ? lazyDefault() : lazyDefault) :
         JSON.parse(lsValue);
+    const get = () => value;
+    const set = newValue => {
+        value = newValue;
+        localStorage.setItem(key, JSON.stringify(value));
+    }
+    return [get, set]
 }
 
 export const makeSaveGame = () => {
-    const bestTimes = loadOr(bestTimeKey, {});
+    const [getBestTimes, setBestTimes] = load(bestTimeKey, {});
+    const [getMultiplayer, setMultiplayer] = load(multiplayerKey, false)
 
-    const saveBestTimes = () => {
-        localStorage.setItem(bestTimeKey, JSON.stringify(bestTimes));
-    }
-
-    const getBestTime = mapName => bestTimes[mapName];
+    const getBestTime = mapName => getBestTimes()[mapName];
 
     const setBestTime = (mapName, newBestTime) => {
-        bestTimes[mapName] = newBestTime;
-        saveBestTimes();
+        setBestTimes({
+            ...getBestTimes(),
+            [mapName]: newBestTime,
+        })
     }
 
     return Object.freeze({
-        getBestTime, setBestTime
+        getBestTime, setBestTime, getMultiplayer, setMultiplayer,
     });
 }

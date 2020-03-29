@@ -4,7 +4,7 @@ import { makeGameScreen } from "./gameScreen.js";
 
 const mapTextHeight = 50;
 
-export const makeMainMenuScreen = ({ initScreen, getDimension }) => {
+export const makeMainMenuScreen = ({ initScreen, getDimension, saveGame }) => {
     const dimension = getDimension();
     let startY = dimension.y * 0.3
 
@@ -17,7 +17,7 @@ export const makeMainMenuScreen = ({ initScreen, getDimension }) => {
     const multiplayerTop = dimension.y * 0.9;
     const multiplayerBottom = dimension.y * 0.95;
 
-    let multiplayer = false;
+    let multiplayer = saveGame.getMultiplayer();
 
     const update = (_, click) => {
         if (click !== undefined) {
@@ -30,6 +30,7 @@ export const makeMainMenuScreen = ({ initScreen, getDimension }) => {
             }
             if (multiplayerTop <= canvasY && canvasY <= multiplayerBottom) {
                 multiplayer = !multiplayer;
+                saveGame.setMultiplayer(multiplayer);
             }
         }
     }
