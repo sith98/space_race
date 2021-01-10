@@ -1,9 +1,8 @@
 import Point, { point } from "./Point.js"
-import { LEFT, RIGHT, UP, DOWN } from "./keyEventManager.js";
+import { playerControls } from "./keyEventManager.js";
 import { DESIRED_FRAME_LENGTH } from "./constants.js";
-import { makeProgressTracker } from "./progressTracker.js";
 import { State as GameState, DEBUG } from "./gameScreen.js";
-import { mod, shuffleArray } from "./util.js";
+import { shuffleArray } from "./util.js";
 import { playerColors } from "./colors.js";
 
 const acceleration = 0.1;
@@ -44,12 +43,13 @@ export const makeShip = (
     {
         startPosition = point(0, 0),
         startRotation = 0,
-        colorScheme = playerColors.singlePlayer,
-        controls = playerColors[0],
+        colorScheme = playerColors.singleplayer,
+        controls = playerControls.singleplayer,
     } = {}
 ) => {
     let position = startPosition;
     let rotation = startRotation;
+
     let angularSpeed = 0;
     let speed = point(0, 0);
     let state = State.ALIVE;
@@ -99,7 +99,7 @@ export const makeShip = (
         if (state === State.DEAD) {
             return;
         }
-        
+
         // controls
         const timeFactor = time / (DESIRED_FRAME_LENGTH / 1000);
         if (gameState !== GameState.FINISHED) {
@@ -155,7 +155,7 @@ export const makeShip = (
 
             ctx.translate(position.x, position.y);
             ctx.rotate(rotation);
-    
+
             ctx.fillStyle = colorScheme.ship;
             ctx.beginPath();
             ctx.moveTo(shipSize, 0);
@@ -164,7 +164,7 @@ export const makeShip = (
             ctx.lineTo(-shipSize, -shipSize * 0.7);
             ctx.closePath();
             ctx.fill();
-    
+
             if (plume) {
                 ctx.fillStyle = colorScheme.plume;
                 const width = shipSize * (0.5 + (Math.random() - 0.5) * 0.3);
@@ -181,27 +181,27 @@ export const makeShip = (
                 ctx.closePath();
                 ctx.fill();
             }
-            
+
             ctx.restore();
 
             if (globalThis.debug && false) {
                 ctx.save();
                 ctx.translate(position.x, position.y);
                 ctx.rotate(desiredRotation);
-                
+
                 ctx.strokeStyle = "red";
                 ctx.lineWidth = 2;
-    
+
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(3 * shipSize, 0);
                 ctx.stroke();
-        
+
                 ctx.restore();
             }
-            
+
         });
-        
+
     }
 
     return {

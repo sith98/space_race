@@ -44,7 +44,7 @@ export const makeProgressTracker = ({
     parsedMapDefinition,
     announcementMsgDisplay,
     onFinished,
-    colorScheme = playerColors.singlePlayer,
+    colorScheme = playerColors.singleplayer,
     multiplayer = false,
     secondPlayer = false
 } = {}) => {
@@ -93,7 +93,7 @@ export const makeProgressTracker = ({
     }
 
     const isCurrentCheckpointOnScreen = camera => {
-        const { position: {x, y}, radius } = getCurrentCheckpoint();
+        const { position: { x, y }, radius } = getCurrentCheckpoint();
         const { position, screenSize } = camera;
         return (
             x + radius > position.x &&
@@ -149,7 +149,7 @@ export const makeProgressTracker = ({
                 camera.screenSize.y - overlaySize / 3,
             );
         }
-        
+
         ctx.textAlign = "right";
         ctx.font = fontName(overlaySize * 0.6);
         ctx.fillText(
@@ -180,7 +180,7 @@ export const makeProgressTracker = ({
 
             const arrowPosition = checkpointPosition.sub(cameraPosition)
                 .clampInRect(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y);
-            
+
             ctx.save();
 
             ctx.translate(arrowPosition.x, arrowPosition.y);
@@ -198,7 +198,7 @@ export const makeProgressTracker = ({
             ctx.fill();
 
             ctx.restore();
-        }  
+        }
     }
 
     const getCurrentCheckpoint = () => checkpoints[index];

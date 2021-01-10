@@ -64,7 +64,7 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
         const ship = makeShip({
             startPosition: startPositions[i],
             startRotation: map.startDirection,
-            controls: multiplayer ? playerControls.multiplayer[i] : playerColors.singleplayer,
+            controls: multiplayer ? playerControls.multiplayer[i] : playerControls.singleplayer,
             colorScheme,
         });
         ships.push(ship);
@@ -105,11 +105,11 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
         for (const progressTracker of progressTrackers) {
             progressTracker.update(ms);
         }
-        
+
         for (const [index, ship] of ships.entries()) {
             ship.update({ time, keyEventManager, map, gameState: state, progressTracker: progressTrackers[index] });
         }
-        
+
         countdown.update(time);
         for (const display of announcementMsgDisplays) {
             display.update(time);
@@ -140,7 +140,7 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
         for (const [index, camera] of cameras.entries()) {
             const ship = ships[index];
             camera.focus(ship.position, map.dimension);
-        
+
             const zoomFactor = camera.zoomFactor;
             camera.withCamera(ctx, () => {
                 ctx.save();
@@ -155,8 +155,8 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
                         ship.render(ctx, camera, colorScheme);
                     }
                 }
-                ctx.restore();            
-    
+                ctx.restore();
+
                 if (state !== State.FINISHED) {
                     progressTrackers[index].renderOverlay(ctx, camera);
                 }
@@ -172,7 +172,7 @@ export const makeGameScreen = (mapName, multiplayer = false) => ({ getDimension,
             ctx.textAlign = "left";
             ctx.textBaseline = "top";
             ctx.fillText(fps.toFixed(0), 10, 10);
-        }   
+        }
         ctx.restore();
     };
     return {
